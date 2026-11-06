@@ -16,6 +16,13 @@
   },
   {
    "Type": "widget",
+   "Name": "My widget",
+   "Author": "",
+   "Description": "test",
+   "File": "widgets/my-widget.windotra-widget"
+  },
+  {
+   "Type": "widget",
    "Name": "New Year Countdown",
    "Author": "WinDotra",
    "Description": "Counts down to midnight on New Year's Eve.",
