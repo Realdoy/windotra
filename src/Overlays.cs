@@ -312,6 +312,10 @@ namespace WinCanvas {
    var output=new Button{Content=new TextBlock{Text="\uE7F5",FontFamily=new FontFamily(Ui.Icons),FontSize=18,Foreground=Brush(Secondary)},Width=38,Height=38,Background=Brushes.Transparent,BorderThickness=new Thickness(0),Cursor=Cursors.Hand,HorizontalAlignment=HorizontalAlignment.Right,ToolTip="Sound output",Template=CircleTemplate()};
    output.Click+=(s,e)=>{try{Process.Start(new ProcessStartInfo("ms-settings:sound"){UseShellExecute=true});}catch(Exception ex){report(ex.Message);}};transportRow.Children.Add(output);
    mediaCard.Children.Add(transportRow);
+   var volumeRow=new Grid{Margin=new Thickness(4,6,4,2)};volumeRow.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});volumeRow.ColumnDefinitions.Add(new ColumnDefinition());volumeRow.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
+   volumeRow.Children.Add(Glyph("\uE993",13,Secondary));var volume=new Slider{Minimum=0,Maximum=100,Margin=new Thickness(10,0,10,0),VerticalAlignment=VerticalAlignment.Center,ToolTip="Volume"};Grid.SetColumn(volume,1);volumeRow.Children.Add(volume);var loud=Glyph("\uE995",13,Secondary);Grid.SetColumn(loud,2);volumeRow.Children.Add(loud);
+   bool settingVolume=false;volume.ValueChanged+=(s,e)=>{if(settingVolume)return;try{SystemControls.Volume=volume.Value/100;if(SystemControls.Muted&&volume.Value>0)SystemControls.Muted=false;}catch(Exception){}};
+   mediaCard.Children.Add(volumeRow);
    expanded.Children.Add(mediaCard);
    // Idle: a calm clock, the way the island looks with no activity.
    var idleCard=new StackPanel{Margin=new Thickness(0,2,0,4)};var bigClock=new TextBlock{FontSize=44,FontWeight=FontWeights.Light,Foreground=Brushes.White,FontFamily=Ui.SansFamily,HorizontalAlignment=HorizontalAlignment.Center};var idleLine=new TextBlock{FontSize=13,Foreground=Brush(Secondary),HorizontalAlignment=HorizontalAlignment.Center};idleCard.Children.Add(bigClock);idleCard.Children.Add(idleLine);expanded.Children.Add(idleCard);
@@ -339,7 +343,11 @@ namespace WinCanvas {
    var cpuMeter=Meter(apps,"CPU",true,ip);var ramMeter=Meter(apps,"Memory",true,ip);
    // Quick launch: your own apps and sites (Island page in WinDotra), with their real icons when there are files behind them.
    var shortcuts=new WrapPanel{HorizontalAlignment=HorizontalAlignment.Center,Margin=new Thickness(0,14,0,0)};
-   foreach(var launcher in Profile.Launchers){var item=launcher;var icon=item.Icon;var b=Round(item.Glyph,40,15,()=>item.Open());if(icon!=null){b.Content=new Image{Source=icon,Width=20,Height=20};}b.ToolTip=item.Name;b.Margin=new Thickness(4);shortcuts.Children.Add(b);}apps.Children.Add(shortcuts);
+   foreach(var launcher in Profile.Launchers){var item=launcher;var icon=item.Icon;var b=Round(item.Glyph,40,15,()=>item.Open());if(icon!=null){b.Content=new Image{Source=icon,Width=20,Height=20};}b.ToolTip=item.Name+"  ·  right-click to remove";b.Margin=new Thickness(4);
+    var remove=new ContextMenu();var removeItem=new MenuItem{Header="Remove "+item.Name};removeItem.Click+=(s,e)=>{Profile.Launchers.Remove(item);dirty=true;Persist();Start();};remove.Items.Add(removeItem);b.ContextMenu=remove;shortcuts.Children.Add(b);}
+   // + adds any app, shortcut, or file in one step.
+   var addApp=Round("\uE710",40,15,()=>{if(Profile.Launchers.Count>=12)throw new InvalidOperationException("Quick launch holds 12 apps. Right-click one to remove it.");var dialog=new Microsoft.Win32.OpenFileDialog{Title="Add an app to the island",Filter="Apps and shortcuts|*.exe;*.lnk;*.url|All files|*.*",InitialDirectory=Environment.GetFolderPath(Environment.SpecialFolder.CommonPrograms),DereferenceLinks=false};if(dialog.ShowDialog()!=true)return;Profile.Launchers.Add(new LaunchItem{Name=System.IO.Path.GetFileNameWithoutExtension(dialog.FileName),Target=dialog.FileName});dirty=true;Persist();Start();});addApp.ToolTip="Add an app";addApp.Margin=new Thickness(4);shortcuts.Children.Add(addApp);
+   apps.Children.Add(shortcuts);
    expanded.Children.Add(ai);expanded.Children.Add(tools);expanded.Children.Add(tasks);expanded.Children.Add(apps);
    bool pinned=false,open=false;string shownTab=null;var dockButtons=new Dictionary<string,Button>();
    Action<string> tab=name=>{shownTab=name;foreach(var item in dockButtons){bool on=item.Key==name;item.Value.Background=on?Brushes.White:Brush(Fill2);((TextBlock)item.Value.Content).Foreground=on?Brushes.Black:Brushes.White;}ai.Visibility=name=="ai"?Visibility.Visible:Visibility.Collapsed;tools.Visibility=name=="tools"?Visibility.Visible:Visibility.Collapsed;tasks.Visibility=name=="tasks"?Visibility.Visible:Visibility.Collapsed;apps.Visibility=name=="apps"?Visibility.Visible:Visibility.Collapsed;};
@@ -401,6 +409,7 @@ namespace WinCanvas {
     // Expanded content.
     mediaCard.Visibility=hasMedia?Visibility.Visible:Visibility.Collapsed;idleCard.Visibility=!hasMedia&&!downloading&&!finished?Visibility.Visible:Visibility.Collapsed;
     bigClock.Text=clock;idleLine.Text=DateTime.Now.ToString("dddd, d MMMM")+"   ·   "+stats.Battery;
+    if(open&&!volume.IsMouseCaptureWithin){double v=SystemControls.Volume;if(v>=0){settingVolume=true;volume.Value=v*100;settingVolume=false;}}
     if(hasMedia){bigTitle.Text=m.Title;artist.Text=m.Artist.Length>0?m.Artist:m.App;elapsed.Text=Clock(m.Position);remaining.Text="-"+Clock(m.Duration-m.Position<TimeSpan.Zero?TimeSpan.Zero:m.Duration-m.Position);fill.Width=rail.ActualWidth*m.Progress;playIcon.Data=m.Playing?(Geometry)pauseShape:playShape;bigWaveHost.Visibility=m.Playing?Visibility.Visible:Visibility.Hidden;}
     downloadCard.Visibility=downloading||finished?Visibility.Visible:Visibility.Collapsed;downloadCard.Margin=new Thickness(0,hasMedia?16:2,0,0);
     if(downloading){dName.Text=d.Name+(downloads.Active.Count>1?"  (+"+(downloads.Active.Count-1)+" more)":"");dDetail.Text=DownloadWatcher.Size(d.Bytes)+(d.Speed>0?"  ·  "+DownloadWatcher.Size(d.Speed)+"/s":"");shimmer.Visibility=Visibility.Visible;dIcon.Text="";dIcon.Foreground=Brush("#0A84FF");}

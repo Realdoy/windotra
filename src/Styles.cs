@@ -22,7 +22,7 @@ namespace WinCanvas {
   static StyleFile Make(string name,string description,params object[] pairs){var style=new StyleFile{Name=name,Author="WinDotra",Description=description};for(int i=0;i<pairs.Length;i+=2)style.Settings[(string)pairs[i]]=pairs[i+1];return style;}
   // Everything a full look sets, so switching styles never leaves pieces of the previous one behind.
   static object[] Full(params object[] pairs){
-   var all=new Dictionary<string,object>{{"Clock",true},{"Stats",false},{"Note",false},{"Focus",false},{"Calendar",false},{"Music",false},{"Reminders",false},{"Day",false},{"Island",true},{"MenuBar",false},{"Dock",false},{"IslandShape","Pill"},{"IslandColor","#000000"},{"IslandIdle","Clock"},{"IslandScale",1.0},{"IslandAura",false},{"SceneColor1",""},{"SceneColor2",""},{"SceneColor3",""},{"SceneBackground",""},{"WallpaperFit","Fill"},{"LiveWallpaper",true},{"DockTiles",false},{"Glass",false},{"Opacity",1.0},{"Font","Inter"},{"SceneSpeed",1.0},{"SceneDensity",1.0},{"Layout","keep"}};
+   var all=new Dictionary<string,object>{{"Clock",true},{"Stats",false},{"Note",false},{"Focus",false},{"Calendar",false},{"Music",false},{"Reminders",false},{"Day",false},{"Island",true},{"MenuBar",false},{"Dock",false},{"IslandShape","Pill"},{"IslandColor","#000000"},{"IslandIdle","Clock"},{"IslandScale",1.0},{"IslandAura",false},{"SceneColor1",""},{"SceneColor2",""},{"SceneColor3",""},{"SceneBackground",""},{"WallpaperFit","Fill"},{"DockTiles",false},{"Glass",false},{"Opacity",1.0},{"Font","Inter"},{"SceneSpeed",1.0},{"SceneDensity",1.0},{"Layout","keep"}};
    for(int i=0;i<pairs.Length;i+=2)all[(string)pairs[i]]=pairs[i+1];
    return all.SelectMany(p=>new[]{(object)p.Key,p.Value}).ToArray();
   }

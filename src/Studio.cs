@@ -21,6 +21,23 @@ namespace WinCanvas {
   readonly DispatcherTimer animate=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(33)};
   System.Windows.Forms.NotifyIcon tray; GlobalShortcut shortcut,panic; bool trayHinted,quitting,launched;
   public void Quit(){quitting=true;Close();}
+  public const string AppVersion="0.15";
+  static string updateTag,updateUrl;
+  // Asks GitHub for the newest release once per start; if it's newer, says so in the tray, the status bar, and on Home.
+  async void CheckForUpdate(){try{using(var http=new System.Net.Http.HttpClient{Timeout=TimeSpan.FromSeconds(8)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra/"+AppVersion);var json=await http.GetStringAsync("https://api.github.com/repos/Realdoy/windotra/releases/latest");var data=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);string tag=Convert.ToString(data["tag_name"]).TrimStart('v');Version latest,mine;
+    if(Version.TryParse(tag,out latest)&&Version.TryParse(AppVersion,out mine)&&latest>mine){updateTag=tag;updateUrl=Convert.ToString(data["html_url"]);Report("WinDotra "+tag+" is out. Download it from Home.");if(tray!=null)tray.ShowBalloonTip(4000,"WinDotra "+tag+" is available","Open WinDotra → Home to download the update.",System.Windows.Forms.ToolTipIcon.Info);if(current=="Home")Page("Home");}}}catch(Exception){}}
+  readonly WrapPanel quick=new WrapPanel{Margin=new Thickness(56,14,40,0)};
+  // One-click switches for the big pieces, always at the top.
+  void QuickBar(){
+   quick.Children.Clear();bool on=Overlays!=null&&Overlays.Active;
+   Func<string,bool,Action,Button> pill=(label,active,action)=>{var b=new Button{Content=(active?"● ":"○ ")+label,FontSize=12,Padding=new Thickness(12,5,12,5),Margin=new Thickness(0,0,8,0),Background=Brush(active?"#1F0A84FF":Ui.Surface),Foreground=Brush(active?"#64B5FF":Ui.Soft),ToolTip=active?"On: click to turn off":"Off: click to turn on"};b.Click+=(s,e)=>Safe(action);return b;};
+   quick.Children.Add(pill("Desktop",on,()=>{if(Overlays.Active){Overlays.Stop();Report("Widgets, island, menu bar, and Dock are off.");}else Launch();}));
+   quick.Children.Add(pill("Live wallpaper",Overlays.WallpaperRunning,()=>{Profile.LiveWallpaper=!Overlays.WallpaperRunning;Save();ToggleWallpaper();}));
+   quick.Children.Add(pill("Menu bar",Profile.MenuBar,()=>{Profile.MenuBar=!Profile.MenuBar;RefreshDesktop();}));
+   quick.Children.Add(pill("Dock",Profile.Dock,()=>{Profile.Dock=!Profile.Dock;if(Profile.Dock&&Profile.DockApps.Count==0)Profile.DockApps=OverlayManager.DockDefaults();TaskbarForDock(Profile.Dock);RefreshDesktop();}));
+   quick.Children.Add(pill("Island",Profile.Island,()=>{Profile.Island=!Profile.Island;RefreshDesktop();}));
+   var off=new Button{Content="Turn everything off",FontSize=12,Padding=new Thickness(12,5,12,5),Background=Brush("#33FF453A"),Foreground=Brush("#FF6961"),ToolTip="Back to normal Windows (Ctrl+Alt+Shift+W)"};off.Click+=(s,e)=>Safe(BackToWindows);quick.Children.Add(off);
+  }
   public void LaunchQuietly(){if(launched||smoke||NeedsSetup||Profile.Off)return;launched=true;try{Launch();}catch(Exception e){Report(e.Message);}}
   const string RunKey=@"Software\Microsoft\Windows\CurrentVersion\Run";
   static bool StartsWithWindows {get{using(var key=Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKey))return key!=null&&(key.GetValue("WinDotra")!=null||key.GetValue("WinCanvas")!=null);}}
@@ -41,7 +58,7 @@ namespace WinCanvas {
    if(File.Exists(ProfilePath)) {try {Profile=JsonFile.Read<DesktopProfile>(ProfilePath); if(Profile==null)throw new InvalidDataException("Empty profile");Profile.Validate();}catch(Exception e){Profile=new DesktopProfile();warning="Saved profile could not load: "+e.Message+" Original file retained until you save.";}}
    customization=new CustomizationService(new NativeCustomization(),folder);
    SetupAi();
-   Overlays=new OverlayManager(Profile,Save,Report){DesktopAttach=!smoke,Demo=smoke};Overlays.Chat=chat;Overlays.ConfigureAi=OpenAiSetup;Overlays.ConfigureIsland=()=>{Show();Activate();Page("Island");};Overlays.DataFolder=folder;Overlays.WidgetsFolder=CustomWidget.Folder(folder);Overlays.SwitchAppearance=dark=>Safe(()=>AppleAppearance(dark));Overlays.GoBackToWindows=()=>Safe(BackToWindows);Overlays.ShowStudio=()=>{Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();};Overlays.ChangeEngine=engine=>Safe(()=>{SaveAi(c=>c.Provider=engine);if(current=="AI")Page(current);});Overlays.EditingChanged=on=>Report(on?"Edit mode: drag widgets, resize with the blue corner, use − to remove and ⋯ for size and color. Click Done when finished.":"Widgets locked in place.");
+   Overlays=new OverlayManager(Profile,Save,Report){DesktopAttach=!smoke,Demo=smoke};Overlays.Chat=chat;Overlays.ConfigureAi=OpenAiSetup;Overlays.ConfigureIsland=()=>{Show();Activate();Page("Island");};Overlays.DataFolder=folder;Overlays.WidgetsFolder=folder;Overlays.SwitchAppearance=dark=>Safe(()=>AppleAppearance(dark));Overlays.GoBackToWindows=()=>Safe(BackToWindows);Overlays.ShowStudio=()=>{Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();};Overlays.ChangeEngine=engine=>Safe(()=>{SaveAi(c=>c.Provider=engine);if(current=="AI")Page(current);});Overlays.EditingChanged=on=>Report(on?"Edit mode: drag widgets, resize with the blue corner, use − to remove and ⋯ for size and color. Click Done when finished.":"Widgets locked in place.");
    if(!smoke){shortcut=new GlobalShortcut(this,()=>Overlays.OpenAssistant(),Report);panic=new GlobalShortcut(this,()=>Safe(BackToWindows),Report,7711,0x4007,0x57,"Ctrl+Alt+Shift+W");}
    var root=new Grid();root.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(232)});root.ColumnDefinitions.Add(new ColumnDefinition());
    root.Children.Add(Sidebar());
@@ -49,6 +66,7 @@ namespace WinCanvas {
    scroll.Content=body;scroll.VerticalScrollBarVisibility=ScrollBarVisibility.Auto;scroll.HorizontalScrollBarVisibility=ScrollBarVisibility.Disabled;scroll.Padding=new Thickness(56,40,40,40);right.Children.Add(scroll);
    // Pages use one readable column: as wide as the window allows, up to 820.
    scroll.SizeChanged+=(s,e)=>{body.Width=Math.Max(420,Math.Min(820,scroll.ActualWidth-scroll.Padding.Left-scroll.Padding.Right-12));};
+   right.RowDefinitions.Insert(0,new RowDefinition{Height=GridLength.Auto});Grid.SetRow(scroll,1);right.Children.Add(quick);
    right.Children.Add(StatusBar());root.Children.Add(right);
    WindowStyle=WindowStyle.None;ResizeMode=ResizeMode.CanResize;
    System.Windows.Shell.WindowChrome.SetWindowChrome(this,new System.Windows.Shell.WindowChrome{CaptionHeight=36,ResizeBorderThickness=new Thickness(6),CornerRadius=new CornerRadius(0),GlassFrameThickness=new Thickness(0),UseAeroCaptionButtons=false});
@@ -70,6 +88,7 @@ namespace WinCanvas {
    // Closing the window keeps WinCanvas running in the tray; Quit (tray menu) really exits.
    Closing+=(s,e)=>{if(quitting||smoke||tray==null)return;e.Cancel=true;Hide();if(!trayHinted){trayHinted=true;tray.ShowBalloonTip(2500,"WinDotra keeps running","Your island and widgets stay on. Double-click the tray icon to come back, or right-click it to quit.",System.Windows.Forms.ToolTipIcon.Info);}};
    Closed+=(s,e)=>{animate.Stop();foreach(var cursor in previews)cursor.Dispose();Overlays.Dispose();chat.Cancel();aiClient.Dispose();if(shortcut!=null)shortcut.Dispose();if(panic!=null)panic.Dispose();if(tray!=null){tray.Icon.Dispose();tray.Dispose();}};
+   if(!smoke)CheckForUpdate();
    Page(NeedsSetup?"Setup":"Home");Report(warning??aiWarning??"Nothing launches or changes Windows until you choose an action.");
   }
   static IEnumerable<WallpaperScene> FindScenes(DependencyObject parent) {
@@ -108,7 +127,7 @@ namespace WinCanvas {
    return row;
   }
   FrameworkElement StatusBar() {
-   var bar=new Border{BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(0,1,0,0),Padding=new Thickness(56,12,40,14)};Grid.SetRow(bar,1);
+   var bar=new Border{BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(0,1,0,0),Padding=new Thickness(56,12,40,14)};Grid.SetRow(bar,2);
    var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition());grid.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
    status.TextWrapping=TextWrapping.Wrap;status.Foreground=Brush(Ui.Soft);status.FontSize=13;status.VerticalAlignment=VerticalAlignment.Center;grid.Children.Add(status);
    var keys=new TextBlock{Text="Ctrl+1–0 pages  ·  Ctrl+L launch  ·  Ctrl+Alt+Space AI",FontSize=11,Foreground=Brush(Ui.Faint),VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(16,0,0,0)};Grid.SetColumn(keys,1);grid.Children.Add(keys);
@@ -126,7 +145,7 @@ namespace WinCanvas {
   string ProfilePath {get{return Path.Combine(folder,"desktop.json");}}
   void Save() {Profile.Validate();JsonFile.Save(ProfilePath,Profile);}
   void Report(string text) {
-   status.Text=text;bool on=Overlays!=null&&Overlays.Active,live=Overlays!=null&&Overlays.WallpaperRunning;runningDot.Fill=Brush(on||live?"#16A34A":Ui.Faint);
+   status.Text=text;try{QuickBar();}catch(Exception){}bool on=Overlays!=null&&Overlays.Active,live=Overlays!=null&&Overlays.WallpaperRunning;runningDot.Fill=Brush(on||live?"#16A34A":Ui.Faint);
    running.Text=on||live?(on?Overlays.Windows.Count+" widget"+(Overlays.Windows.Count==1?"":"s"):"")+(on&&live?" + ":"")+(live?"live wallpaper":"")+" running":"Desktop not running";
   }
   void Safe(Action action) {try{action();}catch(Exception e){Report(e.Message);if(!smoke)MessageBox.Show(this,e.Message,"WinDotra",MessageBoxButton.OK,MessageBoxImage.Warning);else throw;}}
@@ -225,6 +244,7 @@ namespace WinCanvas {
    var escapeButton=Button("Back to normal Windows",BackToWindows);escapeButton.Background=Brush("#FF453A");escapeButton.Foreground=Brushes.White;escapeButton.FontWeight=FontWeights.SemiBold;escapeButton.Margin=new Thickness(0);Grid.SetColumn(escapeButton,1);escape.Children.Add(escapeButton);body.Children.Add(escape);
    string before=Path.Combine(ProfilesFolder,"Before going back to Windows.json");
    if(Profile.Off&&File.Exists(before)){var back=Primary("Bring back my WinDotra desktop",()=>{UseProfile(LoadProfile(before));Report("Welcome back. Your desktop is as you left it.");});back.Margin=new Thickness(0,-8,0,20);body.Children.Add(back);}
+   if(updateTag!=null){var up=Primary("Download WinDotra "+updateTag,()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(updateUrl){UseShellExecute=true}));up.Margin=new Thickness(0,-8,0,20);body.Children.Add(up);}
    int open=Profile.Tasks.Count(t=>!t.Done),widgets=new[]{Profile.Clock,Profile.Stats,Profile.Note,Profile.Focus,Profile.Calendar}.Count(v=>v);
    var stats=new UniformGrid{Columns=4,Margin=new Thickness(0,0,0,24)};
    stats.Children.Add(Stat("Desktop",Overlays.Active?"Running":"Off"));stats.Children.Add(Stat("AI",AiSummary()));stats.Children.Add(Stat("Tasks",open==0?"All clear":open+" open"));stats.Children.Add(Stat("Live wallpaper",Overlays.WallpaperRunning?Profile.Scene:"Off"));body.Children.Add(stats);
