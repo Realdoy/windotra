@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace WinCanvas {
  public partial class Studio {
   // The community store lives on the project's GitHub Pages site (docs/store). A copy ships inside WinDotra, so the
   // store works offline; the online catalog adds whatever people have shared since.
-  public const string StoreUrl="https://windotra.github.io/windotra/store/";
+  public const string StoreUrl="https://realdoy.github.io/windotra/store/";
   static string LocalStore{get{return Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"store");}}
   static List<StoreItem> onlineItems; static bool onlineTried;
   static List<StoreItem> ReadIndex(string json,string baseLocation){var index=new JavaScriptSerializer().Deserialize<StoreIndex>(json);var list=new List<StoreItem>();if(index==null||index.Items==null)return list;
@@ -52,7 +52,7 @@ namespace WinCanvas {
      else{try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/','\\'));if(path!=null)card.Children.Add(StylePreview(Styles.Read(path)));}catch(Exception){}}
      card.Children.Add(new TextBlock{Text=item.Name,FontSize=14,FontWeight=FontWeights.SemiBold,Margin=new Thickness(2,10,0,2)});
      card.Children.Add(new TextBlock{Text=item.Description,FontSize=11.5,Foreground=Brush(Ui.Soft),TextWrapping=TextWrapping.Wrap,Height=46,Margin=new Thickness(2,0,0,2)});
-     card.Children.Add(new TextBlock{Text="by "+(item.Author.Length>0?item.Author:"someone")+(item.Base.StartsWith("http")?"  ·  online":""),FontSize=11,Foreground=Brush(Ui.Faint),Margin=new Thickness(2,0,0,8)});
+     card.Children.Add(new TextBlock{Text="by "+(item.Author.Length>0?item.Author:"someone")+(item.Base.StartsWith("http")?"  Â·  online":""),FontSize=11,Foreground=Brush(Ui.Faint),Margin=new Thickness(2,0,0,8)});
      var get=Primary("Get",()=>Install(item));get.Margin=new Thickness(2,0,0,0);get.Padding=new Thickness(18,5,18,5);card.Children.Add(get);
      grid.Children.Add(new Border{Background=Brush(Ui.Surface),CornerRadius=new CornerRadius(16),Margin=new Thickness(0,0,12,12),Child=card});}
     section.Children.Add(grid);
@@ -60,16 +60,16 @@ namespace WinCanvas {
    // Your own widgets: installed and made here.
    var mine=CustomWidget.All(folder);var yours=Card("Your widgets",mine.Count==0?"None yet. Get one above or make your own below.":"Switch them on and off, edit, or export them to share.");
    foreach(var w0 in mine){var w=w0;var row=new Grid{Margin=new Thickness(0,6,0,6)};row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
-    var name=new StackPanel{VerticalAlignment=VerticalAlignment.Center};name.Children.Add(new TextBlock{Text=w.Name,FontWeight=FontWeights.SemiBold});name.Children.Add(new TextBlock{Text=(w.Description.Length>0?w.Description:"Custom widget")+(w.Author.Length>0?"  ·  by "+w.Author:""),FontSize=11.5,Foreground=Brush(Ui.Faint),TextTrimming=TextTrimming.CharacterEllipsis});row.Children.Add(name);
+    var name=new StackPanel{VerticalAlignment=VerticalAlignment.Center};name.Children.Add(new TextBlock{Text=w.Name,FontWeight=FontWeights.SemiBold});name.Children.Add(new TextBlock{Text=(w.Description.Length>0?w.Description:"Custom widget")+(w.Author.Length>0?"  Â·  by "+w.Author:""),FontSize=11.5,Foreground=Brush(Ui.Faint),TextTrimming=TextTrimming.CharacterEllipsis});row.Children.Add(name);
     var tools=new StackPanel{Orientation=Orientation.Horizontal};Grid.SetColumn(tools,1);bool on=Profile.CustomWidgets.Contains(w.Id);
     tools.Children.Add(Chip(on?"On desktop":"Off",on,()=>{if(on)Profile.CustomWidgets.Remove(w.Id);else Profile.CustomWidgets.Add(w.Id);RefreshDesktop();Page(current);}));
     tools.Children.Add(Ghost("Edit",()=>{editing=w;widgetDraft=null;Page(current);}));
-    tools.Children.Add(Ghost("Export…",()=>{var d=new Microsoft.Win32.SaveFileDialog{Filter="WinDotra widget|*"+CustomWidget.Extension,FileName=Safe(w.Name)+CustomWidget.Extension};if(d.ShowDialog(this)==true){w.Save(d.FileName);Report("Exported. Share the file, or add it to the store (see Share below).");}}));
+    tools.Children.Add(Ghost("Exportâ€¦",()=>{var d=new Microsoft.Win32.SaveFileDialog{Filter="WinDotra widget|*"+CustomWidget.Extension,FileName=Safe(w.Name)+CustomWidget.Extension};if(d.ShowDialog(this)==true){w.Save(d.FileName);Report("Exported. Share the file, or add it to the store (see Share below).");}}));
     tools.Children.Add(Ghost("Delete",()=>{Profile.CustomWidgets.Remove(w.Id);Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(w.Path,Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);RefreshDesktop();Page(current);}));
     row.Children.Add(tools);yours.Children.Add(row);}
-   var importRow=new WrapPanel();importRow.Children.Add(Button("Import a widget or style…",()=>{var d=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra files|*"+CustomWidget.Extension+";*"+Styles.Extension};if(d.ShowDialog(this)!=true)return;Install(new StoreItem{Type=d.FileName.EndsWith(Styles.Extension)?"style":"widget",Name=Path.GetFileNameWithoutExtension(d.FileName),File=Path.GetFileName(d.FileName),Base=Path.GetDirectoryName(d.FileName)});}));yours.Children.Add(importRow);
+   var importRow=new WrapPanel();importRow.Children.Add(Button("Import a widget or styleâ€¦",()=>{var d=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra files|*"+CustomWidget.Extension+";*"+Styles.Extension};if(d.ShowDialog(this)!=true)return;Install(new StoreItem{Type=d.FileName.EndsWith(Styles.Extension)?"style":"widget",Name=Path.GetFileNameWithoutExtension(d.FileName),File=Path.GetFileName(d.FileName),Base=Path.GetDirectoryName(d.FileName)});}));yours.Children.Add(importRow);
    // The widget maker.
-   var make=Card(editing!=null?"Edit “"+editing.Name+"”":"Make a widget","One line per row. Start a row with “# ” for big text, “## ” for a heading, “> ” for small grey text. Live values: {time} {time:h:mm tt} {date} {date:dddd} {day} {greeting} {cpu} {ram} {battery} {song} {artist} {days-until:2026-12-24} {countdown:2026-12-31 23:59}.");
+   var make=Card(editing!=null?"Edit â€œ"+editing.Name+"â€":"Make a widget","One line per row. Start a row with â€œ# â€ for big text, â€œ## â€ for a heading, â€œ> â€ for small grey text. Live values: {time} {time:h:mm tt} {date} {date:dddd} {day} {greeting} {cpu} {ram} {battery} {song} {artist} {days-until:2026-12-24} {countdown:2026-12-31 23:59}.");
    var w2=editing??new CustomWidget{Name="My widget",Lines=CustomWidget.FromText("## {greeting}\n# {time}\n> {date:dddd, d MMMM}")};
    var nameBox=new TextBox{Text=w2.Name,MaxLength=40,Margin=new Thickness(0,4,0,6)};var descBox=new TextBox{Text=w2.Description,MaxLength=200,Margin=new Thickness(0,0,0,6)};var authorBox=new TextBox{Text=w2.Author,MaxLength=40,Margin=new Thickness(0,0,0,6)};
    var textBox=new TextBox{Text=widgetDraft??CustomWidget.ToText(w2.Lines),AcceptsReturn=true,Height=110,FontFamily=new FontFamily("Cascadia Mono, Consolas"),Margin=new Thickness(0,0,0,6),VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
@@ -90,7 +90,7 @@ namespace WinCanvas {
    if(editing!=null)actions.Children.Add(Ghost("Cancel",()=>{editing=null;widgetDraft=null;Page(current);}));
    make.Children.Add(actions);
    var share=Card("Share yours","Export a widget or style, then add it to the community store with a pull request on GitHub (put the file in docs/store and add a line to docs/store/index.json). Once it's merged, everyone sees it here.");
-   share.Children.Add(Button("Open the store website ↗",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(StoreUrl.Replace("store/","")){UseShellExecute=true})));
+   share.Children.Add(Button("Open the store website â†—",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(StoreUrl.Replace("store/","")){UseShellExecute=true})));
   }
  }
 }
