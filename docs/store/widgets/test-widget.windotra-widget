@@ -1,0 +1,50 @@
+{
+  "Format": "windotra-widget",
+  "Version": 1,
+  "Name": "test widget",
+  "Author": "Realdoy",
+  "AuthorUrl": "https://github.com/Realdoy",
+  "Description": "",
+  "Background": "#5E3A9E",
+  "Accent": "",
+  "Link": "",
+  "Width": 1,
+  "Opacity": 0.65,
+  "Radius": 36,
+  "Images": [
+    "previews/test-widget-1.png"
+  ],
+  "Lines": [
+    {
+      "Kind": "text",
+      "Text": "{greeting}",
+      "Color": "",
+      "Weight": "SemiBold",
+      "Align": "Left",
+      "Bar": "day",
+      "Size": 15,
+      "ShowValue": false
+    },
+    {
+      "Kind": "text",
+      "Text": "{time}",
+      "Color": "",
+      "Weight": "Light",
+      "Align": "Left",
+      "Bar": "day",
+      "Size": 40,
+      "ShowValue": false
+    },
+    {
+      "Kind": "text",
+      "Text": "{date:dddd, d MMMM}",
+      "Color": "",
+      "Weight": "Normal",
+      "Align": "Left",
+      "Bar": "day",
+      "Size": 12,
+      "ShowValue": false
+    }
+  ],
+  "Id": "custom:test-widget"
+}
