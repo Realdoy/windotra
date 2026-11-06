@@ -64,11 +64,18 @@
    "File": "styles/paper.windotra-style"
   },
   {
+   "Type": "widget",
+   "Name": "Test 1",
+   "Author": "WinDotra",
+   "Description": "First test!",
+   "File": "styles/paper.windotra-style"
+  },
+  {
    "Type": "style",
    "Name": "Rainmeter",
    "Author": "WinDotra",
    "Description": "Just the big F R I D A Y date on a dark gradient. No tiles, no Dock, a tiny island.",
-   "File": "styles/rainmeter.windotra-style"
+   "File": "styles/rainmeter.windotra-widget"
   },
   {
    "Type": "style",
