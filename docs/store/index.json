@@ -28,6 +28,7 @@
    "Type": "widget",
    "Name": "My widget",
    "Author": "",
+   "AuthorUrl": "",
    "Description": "test",
    "File": "widgets/my-widget.windotra-widget"
   },
