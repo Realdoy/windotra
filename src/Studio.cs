@@ -21,7 +21,7 @@ namespace WinCanvas {
   readonly DispatcherTimer animate=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(33)};
   System.Windows.Forms.NotifyIcon tray; GlobalShortcut shortcut,panic; bool trayHinted,quitting,launched;
   public void Quit(){quitting=true;Close();}
-  public const string AppVersion="0.16";
+  public const string AppVersion="0.17";
   static string updateTag,updateUrl;
   // Asks GitHub for the newest release once per start; if it's newer, says so in the tray, the status bar, and on Home.
   async void CheckForUpdate(){try{using(var http=new System.Net.Http.HttpClient{Timeout=TimeSpan.FromSeconds(8)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra/"+AppVersion);var json=await http.GetStringAsync("https://api.github.com/repos/Realdoy/windotra/releases/latest");var data=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);string tag=Convert.ToString(data["tag_name"]).TrimStart('v');Version latest,mine;
@@ -164,7 +164,7 @@ namespace WinCanvas {
    var heading=new TextBlock{Text=title,FontFamily=Ui.SansFamily,FontSize=26,FontWeight=FontWeights.SemiBold,Margin=new Thickness(0,0,0,6),TextWrapping=TextWrapping.Wrap};body.Children.Add(heading);var sub=Text(description,15,Ui.Soft);sub.Margin=new Thickness(0,0,0,24);body.Children.Add(sub);
   }
   void PageSwitch(string label,bool on,Action<bool> set){
-   var row=new Grid{Margin=new Thickness(0,-8,0,20)};row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
+   var row=new Grid();row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
    var text=new TextBlock{Text=label+(on?"  ·  on":"  ·  off"),FontSize=14,FontWeight=FontWeights.SemiBold,Foreground=Brush(on?"#30D158":Ui.Soft),VerticalAlignment=VerticalAlignment.Center};row.Children.Add(text);
    var toggle=new CheckBox{IsChecked=on,Style=(Style)Resources["Switch"],Padding=new Thickness(0),VerticalAlignment=VerticalAlignment.Center,ToolTip=on?"Turn off":"Turn on"};toggle.Click+=(s2,e2)=>Safe(()=>{set(toggle.IsChecked==true);Page(current);});Grid.SetColumn(toggle,1);row.Children.Add(toggle);
    body.Children.Add(new Border{Background=Brush(Ui.Surface),CornerRadius=new CornerRadius(12),Padding=new Thickness(16,10,16,10),Margin=new Thickness(0,0,0,18),Child=row});
