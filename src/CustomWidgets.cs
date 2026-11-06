@@ -13,7 +13,7 @@ namespace WinCanvas {
  // A widget anyone can make and share: a few lines of text with live values, a size, colors, and an optional link.
  // Widget files (.windotra-widget) are plain JSON. They contain no code, so they are safe to download.
  // Kind: "text" (with live values), "bar" (a progress bar for cpu, ram, battery, day, week, month, or year), or "space".
- public class WidgetLine { public string Kind="text",Text="",Color="",Weight="Normal",Align="Left",Bar="day"; public double Size=14; }
+ public class WidgetLine { public string Kind="text",Text="",Color="",Weight="Normal",Align="Left",Bar="day"; public double Size=14; public bool ShowValue=false; }
  public static class WidgetBars { public static readonly string[] All={"cpu","ram","battery","day","week","month","year"}; }
  public class CustomWidget {
   public string Format="windotra-widget"; public int Version=1;
@@ -46,6 +46,7 @@ namespace WinCanvas {
       case "greeting":return now.Hour<5?"Good night":now.Hour<12?"Good morning":now.Hour<18?"Good afternoon":"Good evening";
       case "days-until":{DateTime d;if(!DateTime.TryParse(arg,CultureInfo.InvariantCulture,DateTimeStyles.None,out d))return "?";return Math.Max(0,(int)Math.Ceiling((d.Date-now.Date).TotalDays)).ToString();}
       case "countdown":{DateTime d;if(!DateTime.TryParse(arg,CultureInfo.InvariantCulture,DateTimeStyles.None,out d))return "?";var left=d-now;if(left<TimeSpan.Zero)left=TimeSpan.Zero;return (left.Days>0?left.Days+"d ":"")+left.Hours.ToString("00")+":"+left.Minutes.ToString("00")+":"+left.Seconds.ToString("00");}
+      case "percent":return WidgetBars.All.Contains(arg??"")?Math.Round(OverlayManager.BarValue(arg,live))+"%":"?";
       default:if(WidgetData.Keys.Contains(key))return WidgetData.Get(key,arg??"");return live!=null?live(key)??m.Value:m.Value;
      }
     }catch(FormatException){return m.Value;}
@@ -68,7 +69,10 @@ namespace WinCanvas {
    foreach(var line in w.Lines){var l=line;
     if(l.Kind=="space"){stack.Children.Add(new Border{Height=Math.Max(2,l.Size)});continue;}
     if(l.Kind=="bar"){var bar=new ProgressBar{Maximum=100,Height=Math.Max(3,Math.Min(20,l.Size)),Margin=new Thickness(0,4,0,4),Foreground=Ui.Brush(l.Color.Length>0?l.Color:(w.Accent.Length>0?w.Accent:"#0A84FF")),Background=Ui.Brush(p.Chip)};
-     Action fill=()=>{bar.Value=BarValue(l.Bar,live);};fill();if(refresh!=null)refresh.Add(fill);stack.Children.Add(bar);continue;}
+     if(!l.ShowValue){Action fill=()=>{bar.Value=BarValue(l.Bar,live);};fill();if(refresh!=null)refresh.Add(fill);stack.Children.Add(bar);continue;}
+     var row=new Grid();row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});row.Children.Add(bar);
+     var pct=new TextBlock{FontSize=12,FontWeight=FontWeights.SemiBold,FontFamily=Ui.SansFamily,Foreground=Ui.Brush(p.Soft),Margin=new Thickness(8,0,0,0),VerticalAlignment=VerticalAlignment.Center,MinWidth=34,TextAlignment=TextAlignment.Right};Grid.SetColumn(pct,1);row.Children.Add(pct);
+     Action fill2=()=>{double v=BarValue(l.Bar,live);bar.Value=v;pct.Text=Math.Round(v)+"%";};fill2();if(refresh!=null)refresh.Add(fill2);stack.Children.Add(row);continue;}
     var t=new TextBlock{FontSize=l.Size,FontFamily=Ui.SansFamily,TextWrapping=TextWrapping.Wrap,TextTrimming=TextTrimming.CharacterEllipsis,Foreground=Ui.Brush(l.Color.Length>0?l.Color:(l.Size<=12.5?p.Soft:p.Ink)),TextAlignment=l.Align=="Center"?TextAlignment.Center:l.Align=="Right"?TextAlignment.Right:TextAlignment.Left,Margin=new Thickness(0,1,0,1)};
     t.FontWeight=(FontWeight)new FontWeightConverter().ConvertFromString(l.Weight);if(w.Accent.Length>0&&l.Size>=20&&l.Color.Length==0)t.Foreground=Ui.Brush(w.Accent);
     Action update=()=>t.Text=CustomWidget.Expand(l.Text,live);update();if(refresh!=null)refresh.Add(update);stack.Children.Add(t);}

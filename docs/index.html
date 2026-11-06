@@ -47,6 +47,11 @@
  .tabs button.on{background:var(--ink);color:#000}
  pre{background:var(--panel);border-radius:14px;padding:18px;overflow-x:auto;font-size:13px;color:#d1d1d6;border:1px solid rgba(255,255,255,.06)}
  ol{color:var(--soft)} ol li{margin:6px 0}
+ .pv{height:150px;border-radius:14px;margin:-4px 0 8px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#111}
+ .wd{border-radius:22px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.35);overflow:hidden;max-height:136px}
+ .wd .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
+ .wd .bar{height:6px;border-radius:3px;background:rgba(127,127,127,.3);margin:5px 0;overflow:hidden}
+ .wd .bar i{display:block;height:100%}
  footer{color:var(--soft);font-size:13px;padding:40px 0 60px;border-top:1px solid var(--line)}
  @media (max-width:600px){nav a.hide{display:none}.hero{padding-top:60px}}
 </style>
@@ -107,8 +112,29 @@
 
 <script>
  const list=document.getElementById('items');let all=[];
+ // Previews: widgets are drawn from their rows (with sample live values), styles as a tiny desktop.
+ const sample={time:()=>new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}),date:()=>new Date().toLocaleDateString([], {day:'numeric',month:'long'}),day:()=>new Date().toLocaleDateString([], {weekday:'long'}),greeting:()=>{const h=new Date().getHours();return h<12?'Good morning':h<18?'Good afternoon':'Good evening'},cpu:()=>'23%',ram:()=>'48%',battery:()=>'82% battery',song:()=>'Glass Horizon',artist:()=>'Sample artist','claude-tokens-today':()=>'184.2k','claude-tokens-week':()=>'1.3M','claude-messages-today':()=>'57',web:()=>'42.0',file:()=>'Hello','json-file':()=>'7','days-until':()=>'48',countdown:()=>'48d 06:12:09',percent:()=>'37%'};
+ const fill=t=>String(t||'').replace(/\{([a-z\-]+)(?::[^}]*)?\}/g,(m,k)=>sample[k]?sample[k]():m);
+ const light=hex=>{const c=(hex||'').replace('#','').slice(-6);if(c.length<6)return false;const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (0.2126*r+0.7152*g+0.0722*b)/255>0.55;};
+ const col=h=>!h?'':(h.length===9?'#'+h.slice(3)+Math.round(parseInt(h.slice(1,3),16)).toString(16).padStart(2,'0'):h);
+ function widgetHtml(w){const bg=w.Background||'#1c1c1e',ink=light(bg)?'#1c1917':'#f5f5f7',soft=light(bg)?'#78716c':'#a1a1aa';
+  const rows=(w.Lines||[]).map(l=>{const k=l.Kind||'text';if(k==='space')return `<div style="height:${Math.min(l.Size||8,24)*0.8}px"></div>`;
+   if(k==='bar'){const v={cpu:23,ram:48,battery:82,day:55,week:40,month:20,year:85}[l.Bar]||50;return `<div style="display:flex;align-items:center;gap:6px"><div class="bar" style="flex:1;height:${Math.max(3,Math.min(l.Size||6,14))}px"><i style="width:${v}%;background:${esc(l.Color||w.Accent||'#0a84ff')}"></i></div>${l.ShowValue?`<span style="font-size:11px;color:${soft}">${v}%</span>`:''}</div>`;}
+   const size=Math.min((l.Size||14)*0.72,40),color=l.Color||((l.Size||14)<=12.5?soft:(w.Accent&&(l.Size||14)>=20?w.Accent:ink));
+   return `<div class="ln" style="font-size:${size}px;font-weight:${{Light:300,Normal:400,Medium:500,SemiBold:600,Bold:700}[l.Weight]||400};color:${esc(color)};text-align:${(l.Align||'Left').toLowerCase()}">${esc(fill(l.Text))||'&nbsp;'}</div>`;}).join('');
+  return `<div class="wd" style="background:${esc(col(bg))};opacity:${w.Opacity||1};border-radius:${Math.min(w.Radius||22,26)}px;width:${w.Width===2?'88%':'64%'}">${rows}</div>`;}
+ function styleHtml(st){const s=st.Settings||{},dark=s.SceneDark!==false;const c1=s.SceneColor1||(dark?'#29457a':'#8db8ff'),c2=s.SceneColor2||(dark?'#5b3a8c':'#c3a6ff'),c3=s.SceneColor3||(dark?'#8c3a62':'#ffb0c4');
+  let h=`<div style="position:absolute;inset:0;background:linear-gradient(160deg,${esc(c1)},${esc(c2)} 55%,${esc(c3)})"></div>`;
+  if(s.MenuBar)h+=`<div style="position:absolute;top:0;left:0;right:0;height:10px;background:${s.MenuBarLight?'rgba(242,242,247,.8)':'rgba(22,22,24,.7)'}"></div>`;
+  if(s.Island!==false){const notch=s.IslandShape==='Notch';h+=`<div style="position:absolute;top:${notch?0:(s.MenuBar?14:7)}px;left:50%;transform:translateX(-50%);width:70px;height:${notch?15:17}px;border-radius:${notch?'0 0 8px 8px':(s.IslandShape==='Rounded'?'6px':'9px')};background:${esc(col(s.IslandColor||'#000000'))}"></div>`;}
+  if(s.Day)h+=`<div style="position:relative;color:#fff;font-weight:300;font-size:22px;letter-spacing:.35em">FRIDAY</div>`;
+  else h+=`<div style="position:absolute;left:10px;top:${s.MenuBar?20:12}px;width:74px;height:46px;border-radius:12px;background:${esc(s.Background||'#1c1c1e')};box-shadow:0 4px 12px rgba(0,0,0,.3);padding:6px 9px;font-size:14px;font-weight:300;color:${light(s.Background||'#1c1c1e')?'#1c1917':'#f5f5f7'}">10:09<div style="height:3px;width:40px;border-radius:2px;margin-top:4px;background:${esc(s.Accent||'#0a84ff')}"></div></div>`;
+  if(s.Dock)h+=`<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:3px;padding:3px;border-radius:7px;background:${s.DockLight?'rgba(245,245,247,.75)':'rgba(30,30,32,.65)'}">${['#0a84ff','#34c759','#ff9f0a','#ff375f','#af52de','#5ac8fa','#8e8e93'].map(c=>`<i style="width:11px;height:11px;border-radius:3px;background:${c}"></i>`).join('')}</div>`;
+  return h;}
+ function previews(){document.querySelectorAll('.pv[data-file]').forEach(el=>{fetch('store/'+el.dataset.file).then(r=>r.json()).then(d=>{el.innerHTML=el.dataset.type==='widget'?widgetHtml(d):styleHtml(d);}).catch(()=>{el.textContent='No preview';});});}
+
  function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
- function show(type){list.innerHTML=all.filter(i=>type==='all'||i.Type===type).map(i=>`<div class="item"><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h4>${esc(i.Name)}</h4><p>${esc(i.Description)}</p><span class="tag" style="text-transform:none;letter-spacing:0">by ${/^https:\/\/github\.com\/[A-Za-z0-9-]+$/.test(i.AuthorUrl||'')?`<a href="${esc(i.AuthorUrl)}">${esc(i.Author)}</a>`:esc(i.Author||'someone')}</span><span><a href="store/${encodeURI(i.File)}" download>Download</a> &nbsp;·&nbsp; <a style="color:#ff6961;font-weight:500" href="https://github.com/Realdoy/windotra/issues/new?labels=report&title=${encodeURIComponent('Report '+i.Type+': '+i.Name)}&body=${encodeURIComponent('Item: '+i.Name+'\nFile: docs/store/'+i.File+'\n\nWhat is wrong with it?\n')}">Report</a></span></div>`).join('')||'<p class="sub">Nothing here yet.</p>';}
+ function show(type){list.innerHTML=all.filter(i=>type==='all'||i.Type===type).map(i=>`<div class="item"><div class="pv" data-type="${esc(i.Type)}" data-file="${esc(i.File)}"></div><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h4>${esc(i.Name)}</h4><p>${esc(i.Description)}</p><span class="tag" style="text-transform:none;letter-spacing:0">by ${/^https:\/\/github\.com\/[A-Za-z0-9-]+$/.test(i.AuthorUrl||'')?`<a href="${esc(i.AuthorUrl)}">${esc(i.Author)}</a>`:esc(i.Author||'someone')}</span><span><a href="store/${encodeURI(i.File)}" download>Download</a> &nbsp;·&nbsp; <a style="color:#ff6961;font-weight:500" href="https://github.com/Realdoy/windotra/issues/new?labels=report&title=${encodeURIComponent('Report '+i.Type+': '+i.Name)}&body=${encodeURIComponent('Item: '+i.Name+'\nFile: docs/store/'+i.File+'\n\nWhat is wrong with it?\n')}">Report</a></span></div>`).join('')||'<p class="sub">Nothing here yet.</p>';previews();}
  fetch('store/index.json').then(r=>r.json()).then(d=>{all=d.Items||[];show('all');}).catch(()=>{list.innerHTML='<p class="sub">The store catalog could not be loaded.</p>';});
  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');show(b.dataset.type);});
 </script>

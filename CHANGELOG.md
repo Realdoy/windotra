@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.19 — Previews, percentages, and store moderation
+
+- Website: every widget and style in the store now shows a preview (widgets drawn from their rows, styles as a tiny desktop).
+- Percentages: "Show %" on progress bars, and {percent:day|week|month|year|cpu|ram|battery} as a live value.
+- Fixed: publishing a widget with a name that already exists failed with "Invalid request".
+- Store owner: a Remove button on store items in the app takes an item out of the store for everyone (for reported items).
+
 ## 0.18 — Data widgets, code mode, open uploads, and reports
 
 - Data in widgets: {claude-tokens-today}, {claude-tokens-week}, {claude-messages-today} (from Claude Code's logs on your PC), {web:https://…|path} for any JSON on the web, {file:…} and {json-file:…|path} for files on your PC.

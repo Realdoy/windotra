@@ -12,7 +12,7 @@ using System.Windows.Media;
 namespace WinCanvas {
  public partial class Studio {
   CustomWidget draft; string draftOriginalPath;
-  static readonly string[][] Values={new[]{"Time","{time}"},new[]{"Time (12-hour)","{time:h:mm tt}"},new[]{"Date","{date}"},new[]{"Weekday","{day}"},new[]{"Greeting","{greeting}"},new[]{"Song","{song}"},new[]{"Artist","{artist}"},new[]{"CPU","{cpu}"},new[]{"Memory","{ram}"},new[]{"Battery","{battery}"},new[]{"Days until a date","{days-until:2026-12-24}"},new[]{"Countdown","{countdown:2026-12-31 23:59}"},new[]{"Claude tokens today","{claude-tokens-today}"},new[]{"Claude tokens this week","{claude-tokens-week}"},new[]{"Claude messages today","{claude-messages-today}"},new[]{"A number from the web","{web:https://api.coinbase.com/v2/prices/BTC-USD/spot|data.amount}"},new[]{"A line from a file","{file:C:\\Users\\you\\note.txt}"},new[]{"A value from a JSON file","{json-file:C:\\path\\data.json|key}"}};
+  static readonly string[][] Values={new[]{"Time","{time}"},new[]{"Time (12-hour)","{time:h:mm tt}"},new[]{"Date","{date}"},new[]{"Weekday","{day}"},new[]{"Greeting","{greeting}"},new[]{"Song","{song}"},new[]{"Artist","{artist}"},new[]{"CPU","{cpu}"},new[]{"Memory","{ram}"},new[]{"Battery","{battery}"},new[]{"Days until a date","{days-until:2026-12-24}"},new[]{"Countdown","{countdown:2026-12-31 23:59}"},new[]{"Percent of the day","{percent:day}"},new[]{"Percent of the year","{percent:year}"},new[]{"CPU percent","{percent:cpu}"},new[]{"Battery percent","{percent:battery}"},new[]{"Claude tokens today","{claude-tokens-today}"},new[]{"Claude tokens this week","{claude-tokens-week}"},new[]{"Claude messages today","{claude-messages-today}"},new[]{"A number from the web","{web:https://api.coinbase.com/v2/prices/BTC-USD/spot|data.amount}"},new[]{"A line from a file","{file:C:\\Users\\you\\note.txt}"},new[]{"A value from a JSON file","{json-file:C:\\path\\data.json|key}"}};
   static readonly string[][] Sizes={new[]{"Huge","56"},new[]{"Big","40"},new[]{"Title","22"},new[]{"Normal","14"},new[]{"Small","12"}};
   static readonly string[][] Colors={new[]{"Auto",""},new[]{"White","#FFFFFF"},new[]{"Black","#1C1C1E"},new[]{"Grey","#8E8E93"},new[]{"Blue","#0A84FF"},new[]{"Red","#FF3B30"},new[]{"Orange","#FF9F0A"},new[]{"Yellow","#FFD60A"},new[]{"Green","#30D158"},new[]{"Pink","#FF375F"},new[]{"Purple","#BF5AF2"}};
   // Starts editing a widget (a copy, so nothing changes until Save).
@@ -56,7 +56,7 @@ namespace WinCanvas {
      foreach(var s0 in Sizes){double v=double.Parse(s0[1]);var chip=Chip(s0[0],Math.Abs(line.Size-v)<0.5,()=>{line.Size=v;Page(current);});chip.Padding=new Thickness(9,3,9,3);tools.Children.Add(chip);}
      var bold=Chip("Bold",line.Weight=="Bold"||line.Weight=="SemiBold",()=>{line.Weight=line.Weight=="Normal"||line.Weight=="Light"?"SemiBold":line.Size>=36?"Light":"Normal";Page(current);});bold.Padding=new Thickness(9,3,9,3);tools.Children.Add(bold);
      var align=Chip(line.Align=="Left"?"⟸ Left":line.Align=="Center"?"⟺ Center":"⟹ Right",false,()=>{line.Align=line.Align=="Left"?"Center":line.Align=="Center"?"Right":"Left";Page(current);});align.Padding=new Thickness(9,3,9,3);tools.Children.Add(align);
-    } else {var thick=Chip(line.Size<=6?"Thin":"Thick",false,()=>{line.Size=line.Size<=6?(line.Kind=="bar"?10:24):(line.Kind=="bar"?4:8);Page(current);});thick.Padding=new Thickness(9,3,9,3);tools.Children.Add(thick);}
+    } else {if(line.Kind=="bar"){var pct=Chip("Show %",line.ShowValue,()=>{line.ShowValue=!line.ShowValue;Page(current);});pct.Padding=new Thickness(9,3,9,3);tools.Children.Add(pct);}var thick=Chip(line.Size<=6?"Thin":"Thick",false,()=>{line.Size=line.Size<=6?(line.Kind=="bar"?10:24):(line.Kind=="bar"?4:8);Page(current);});thick.Padding=new Thickness(9,3,9,3);tools.Children.Add(thick);}
     if(line.Kind!="space"){var colors=new StackPanel{Orientation=Orientation.Horizontal,Margin=new Thickness(6,4,0,0)};foreach(var c in Colors){string hex=c[1];colors.Children.Add(Swatch2(hex,line.Color==hex,()=>{line.Color=hex;Page(current);}));}tools.Children.Add(colors);}
     var move=new StackPanel{Orientation=Orientation.Horizontal,Margin=new Thickness(8,0,0,0)};
     move.Children.Add(Ghost("↑",()=>{if(index==0)return;draft.Lines.RemoveAt(index);draft.Lines.Insert(index-1,line);Page(current);}));
@@ -96,6 +96,17 @@ namespace WinCanvas {
   // ---- Publishing: one click from WinDotra to a pull request on GitHub. ----
   const string StoreRepo="Realdoy/windotra";
   static string GhPath(){foreach(var p in new[]{@"C:\Program Files\GitHub CLI\gh.exe",Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),@"Programs\GitHub CLI\gh.exe")})if(File.Exists(p))return p;foreach(string dir in (Environment.GetEnvironmentVariable("PATH")??"").Split(';')){try{var p=Path.Combine(dir.Trim(),"gh.exe");if(File.Exists(p))return p;}catch(Exception){}}return null;}
+  // Store owner only: takes an item out of the store (for reported items). The catalog updates itself afterwards.
+  async void RemoveFromStore(StoreItem item){
+   string gh=GhPath();if(gh==null)return;if(MessageBox.Show(this,"Remove “"+item.Name+"” from the store for everyone?",Brand.Name,MessageBoxButton.OKCancel,MessageBoxImage.Warning)!=MessageBoxResult.OK)return;
+   try{await Task.Run(()=>{string path="docs/store/"+item.File;string sha=Gh(gh,"api repos/"+StoreRepo+"/contents/"+Uri.EscapeDataString(path).Replace("%2F","/")+" --jq .sha");
+     string body=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new Dictionary<string,object>{{"message","Remove from store: "+item.Name},{"sha",sha},{"branch","main"}});
+     Gh(gh,"api -X DELETE repos/"+StoreRepo+"/contents/"+Uri.EscapeDataString(path).Replace("%2F","/")+" --input -",body);});
+    onlineItems=null;onlineTried=false;Report("“"+item.Name+"” is removed from the store. The website updates in a minute or two.");}
+   catch(Exception e){Report("Couldn't remove it: "+e.Message);}
+  }
+  static bool? isOwner;
+  static bool IsStoreOwner(){if(isOwner.HasValue)return isOwner.Value;isOwner=false;try{string gh=GhPath();if(gh!=null)isOwner=Gh(gh,"api user --jq .login").Equals(StoreRepo.Split('/')[0],StringComparison.OrdinalIgnoreCase);}catch(Exception){}return isOwner.Value;}
   static string Gh(string gh,string args,string input=null){var info=new ProcessStartInfo(gh,args){UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true,RedirectStandardInput=input!=null,StandardOutputEncoding=Encoding.UTF8};
    using(var p=Process.Start(info)){if(input!=null){p.StandardInput.Write(input);p.StandardInput.Close();}string o=p.StandardOutput.ReadToEnd(),e=p.StandardError.ReadToEnd();p.WaitForExit();if(p.ExitCode!=0)throw new InvalidOperationException((e.Length>0?e:o).Trim().Split('\n')[0]);return o.Trim();}}
   // With the GitHub app (gh) signed in: fork if needed, add the file on a new branch, and open a pull request.
@@ -116,6 +127,8 @@ namespace WinCanvas {
      string sha=Gh(gh,"api repos/"+StoreRepo+"/git/ref/heads/main --jq .object.sha");string branch="store-"+fileName.Replace('.','-')+"-"+DateTime.Now.ToString("yyyyMMddHHmmss");
      Gh(gh,"api repos/"+repo+"/git/refs -f ref=refs/heads/"+branch+" -f sha="+sha);
      string body=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new Dictionary<string,object>{{"message","Add "+type+": "+name},{"content",Convert.ToBase64String(Encoding.UTF8.GetBytes(json))},{"branch",branch}});
+     string existing=null;try{existing=Gh(gh,"api repos/"+repo+"/contents/docs/store/"+folderName+"/"+Uri.EscapeDataString(fileName)+"?ref="+branch+" --jq .sha");}catch(Exception){}
+     if(!String.IsNullOrEmpty(existing)){var withSha=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(body);withSha["sha"]=existing;body=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(withSha);}
      Gh(gh,"api -X PUT repos/"+repo+"/contents/docs/store/"+folderName+"/"+Uri.EscapeDataString(fileName)+" --input -",body);
      string request=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new Dictionary<string,object>{{"title","Store: "+name+" ("+type+")"},{"head",me+":"+branch},{"base","main"},{"body","Shared from WinDotra. The store catalog updates itself when this is merged."}});
      return Gh(gh,"api repos/"+StoreRepo+"/pulls --input - --jq .html_url",request);});
