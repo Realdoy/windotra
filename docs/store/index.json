@@ -2,6 +2,13 @@
  "Items": [
   {
    "Type": "widget",
+   "Name": "TEST",
+   "Author": "Realdoy",
+   "Description": "uwu this is a first test widget",
+   "File": "widgets/TEST.windotra-widget"
+  },
+  {
+   "Type": "widget",
    "Name": "Greeting",
    "Author": "WinDotra",
    "Description": "A friendly hello with the time and date.",
@@ -64,18 +71,11 @@
    "File": "styles/paper.windotra-style"
   },
   {
-   "Type": "widget",
-   "Name": "Test 1",
-   "Author": "WinDotra",
-   "Description": "First test!",
-   "File": "styles/paper.windotra-style"
-  },
-  {
    "Type": "style",
    "Name": "Rainmeter",
    "Author": "WinDotra",
    "Description": "Just the big F R I D A Y date on a dark gradient. No tiles, no Dock, a tiny island.",
-   "File": "styles/rainmeter.windotra-widget"
+   "File": "styles/rainmeter.windotra-style"
   },
   {
    "Type": "style",
