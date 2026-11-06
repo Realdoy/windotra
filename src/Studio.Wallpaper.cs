@@ -27,6 +27,7 @@ namespace WinCanvas {
   }
   void Wallpaper() {
    Header("Live wallpaper","Animated scenes, your photos, or your videos behind your desktop icons. Every screen gets its own, or one picture can span them all. It pauses while a full-screen app or game is in front.");
+   PageSwitch("Live wallpaper",Overlays.WallpaperRunning,on=>{Profile.LiveWallpaper=on;Save();if(on!=Overlays.WallpaperRunning)ToggleWallpaper();});
    var holder=new Border();body.Children.Add(Framed(holder));holder.Child=DesktopPreview(300,false);changed=()=>{holder.Child=DesktopPreview(300,false);};
    var actions=new WrapPanel{Margin=new Thickness(0,0,0,4)};
    actions.Children.Add(Primary(Overlays.WallpaperRunning?"Stop live wallpaper":"Start live wallpaper",ToggleWallpaper));

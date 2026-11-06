@@ -32,6 +32,10 @@ namespace WinCanvas {
    left.Children.Add(Text("Background",12,Ui.Faint));var back=new WrapPanel{Margin=new Thickness(0,0,0,6)};
    foreach(var c in new[]{"","#1C1C1E","#FFFFFF","#0B1A33","#0A84FF","#FF9F0A","#1F7A4D","#5E3A9E","#3A0F1C","#B31C1C1E"}){string hex=c;back.Children.Add(Swatch2(hex,draft.Background==hex,()=>{draft.Background=hex;Page(current);}));}
    var anyBack=Button("Any color…",()=>PickHex(draft.Background.Length==7?draft.Background:"#1C1C1E",hex=>{draft.Background=hex;Page(current);}));anyBack.Padding=new Thickness(10,3,10,3);anyBack.Margin=new Thickness(6,0,0,0);back.Children.Add(anyBack);left.Children.Add(back);
+   var look=new WrapPanel{Margin=new Thickness(0,0,0,6)};
+   foreach(var o in new[]{new object[]{"Solid",1.0},new object[]{"Slightly see-through",0.85},new object[]{"See-through",0.65},new object[]{"Ghost",0.4}}){double v=(double)o[1];var c=Chip((string)o[0],Math.Abs(draft.Opacity-v)<0.01,()=>{draft.Opacity=v;Page(current);});c.Padding=new Thickness(9,3,9,3);look.Children.Add(c);}
+   foreach(var r in new[]{new object[]{"Square",4.0},new object[]{"Soft",16.0},new object[]{"Round",26.0},new object[]{"Extra round",36.0}}){double v=(double)r[1];var c=Chip((string)r[0],Math.Abs(draft.Radius-v)<0.5,()=>{draft.Radius=v;Page(current);});c.Padding=new Thickness(9,3,9,3);look.Children.Add(c);}
+   left.Children.Add(Text("Look",12,Ui.Faint));left.Children.Add(look);
    left.Children.Add(Text("Accent (titles and bars)",12,Ui.Faint));var accent=new WrapPanel{Margin=new Thickness(0,0,0,8)};foreach(var c in Colors){string hex=c[1];accent.Children.Add(Swatch2(hex,draft.Accent==hex,()=>{draft.Accent=hex;Page(current);}));}left.Children.Add(accent);
    // Rows.
    left.Children.Add(Text("Rows",12,Ui.Faint));

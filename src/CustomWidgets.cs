@@ -17,7 +17,7 @@ namespace WinCanvas {
  public static class WidgetBars { public static readonly string[] All={"cpu","ram","battery","day","week","month","year"}; }
  public class CustomWidget {
   public string Format="windotra-widget"; public int Version=1;
-  public string Name="",Author="",Description="",Background="",Accent="",Link=""; public int Width=1;
+  public string Name="",Author="",Description="",Background="",Accent="",Link=""; public int Width=1; public double Opacity=1, Radius=26;
   public List<WidgetLine> Lines=new List<WidgetLine>();
   [ScriptIgnore] public string Path;
   public const string Extension=".windotra-widget";
@@ -25,6 +25,7 @@ namespace WinCanvas {
   static bool Hex(string v){return v==null||v.Length==0||Regex.IsMatch(v,"^#([0-9A-Fa-f]{2})?[0-9A-Fa-f]{6}$");}
   public void Validate() {
    if(Lines!=null)foreach(var l in Lines)if(l!=null){if(l.Kind==null)l.Kind="text";if(l.Bar==null)l.Bar="day";}
+   if(Opacity<0.2||Opacity>1||Radius<0||Radius>40)throw new InvalidDataException("A widget's opacity or corners are out of range.");
    if(Format!="windotra-widget"||Version!=1||String.IsNullOrWhiteSpace(Name)||Name.Length>40||(Author??"").Length>40||(Description??"").Length>200||(Width!=1&&Width!=2)||!Hex(Background)||!Hex(Accent)||Lines==null||Lines.Count==0||Lines.Count>12)throw new InvalidDataException("That isn't a valid WinDotra widget.");
    if(!String.IsNullOrEmpty(Link)){Uri u;if(Link.Length>1000||!Uri.TryCreate(Link,UriKind.Absolute,out u)||(u.Scheme!="https"&&u.Scheme!="http"))throw new InvalidDataException("A widget link must be a web address (https://…).");}
    foreach(var l in Lines)if(l==null||l.Text==null||l.Kind==null||!new[]{"text","bar","space"}.Contains(l.Kind)||l.Bar==null||!WidgetBars.All.Contains(l.Bar)||l.Text.Length>200||l.Size<2||l.Size>120||!Hex(l.Color)||!Weights.Contains(l.Weight)||!Aligns.Contains(l.Align))throw new InvalidDataException("A widget line is invalid.");
@@ -83,7 +84,7 @@ namespace WinCanvas {
     tile.Children.Add(RenderCustom(w,pal,LiveValue,refresh,tile.Width,tile.Height));
     if(w.Link.Length>0){string link=w.Link;tile.Cursor=System.Windows.Input.Cursors.Hand;tile.MouseLeftButtonUp+=(s,e)=>{if(!Editing)System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(link){UseShellExecute=true});};}
     var window=Shell(w.Id,w.Name,TileWidth(w.Width==2),60+n*30,140+n*30,tile,false);n++;
-    if(w.Background.Length>0){var card=FindCard(window);if(card!=null)card.Background=Ui.Brush(w.Background);}
+    var card=FindCard(window);if(card!=null){if(w.Background.Length>0)card.Background=Ui.Brush(w.Background);card.CornerRadius=new CornerRadius(w.Radius);}window.Opacity=Profile.Opacity*w.Opacity;
    }
   }
   static Border FindCard(Window w){var root=w.Content as Grid;if(root!=null)return root.Children.OfType<Border>().FirstOrDefault();return w.Content as Border;}

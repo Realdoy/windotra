@@ -27,7 +27,8 @@ namespace WinCanvas {
    Slider(design,"Size",Profile.IslandScale,0.8,1.4,v=>Profile.IslandScale=Math.Round(v,2));OnRelease(design,RefreshDesktop);
   }
   void IslandPage() {
-   Header("Island","Your Dynamic Island: what it shows, its round buttons, and your own quick-launch apps.");
+   Header("Island","Your Dynamic Island: how it looks, what it shows, its round buttons, and your own quick-launch apps.");
+   PageSwitch("Dynamic Island",Profile.Island,on=>{Profile.Island=on;RefreshDesktop();});
    var actions=new WrapPanel{Margin=new Thickness(0,0,0,6)};
    actions.Children.Add(Primary("Center at top",()=>{Overlays.CenterIsland();Save();Report("Island centered at the top of its screen.");}));
    actions.Children.Add(Button("Open the island",()=>{Profile.Island=true;Save();Overlays.Profile=Profile;if(!Overlays.Active)Overlays.Start();Overlays.OpenAssistant();}));

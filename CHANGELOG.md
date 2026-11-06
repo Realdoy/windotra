@@ -1,4 +1,12 @@
-﻿# Changelog
+# Changelog
+
+## 0.17 — Fixes and more widget options
+
+- Fixed: broken symbols and empty boxes in the sidebar and quick switches.
+- Fixed: the GitHub build check (it still looked for the old WinCanvas.exe).
+- On/off switch at the top of Widgets, Island, Live wallpaper, and Menu bar & Dock.
+- Widgets page: Edit widgets is at the top; all island settings live on the Island page.
+- Widget maker: see-through amount (solid to ghost) and corner style (square to extra round).
 
 ## 0.16 — Visual widget maker and one-click publishing
 
@@ -14,10 +22,10 @@
 - Island: a volume slider, and a + button to add apps to quick launch (right-click one to remove it).
 - Update check: WinDotra tells you when a new version is on GitHub.
 
-## 0.14 â€” Store, custom widgets, and a website
+## 0.14 — Store, custom widgets, and a website
 
 - Store: download styles and widgets made by the community (plain JSON, never programs). Works offline with the catalog that ships inside WinDotra; adds the online catalog from the project website when reachable. Replaces the Profiles page.
-- Custom widgets: make your own in the Store with a few lines of text and live values ({time}, {date}, {greeting}, {cpu}, {ram}, {battery}, {song}, {artist}, {days-until:â€¦}, {countdown:â€¦}), pick a size and color, and export them to share. They behave like every other widget in Edit mode.
+- Custom widgets: make your own in the Store with a few lines of text and live values ({time}, {date}, {greeting}, {cpu}, {ram}, {battery}, {song}, {artist}, {days-until:…}, {countdown:…}), pick a size and color, and export them to share. They behave like every other widget in Edit mode.
 - Website for GitHub Pages in docs/: features with preview images, the store catalog, and how to share your own.
 - Control Center: Dark Mode now switches between the Apple and Apple Dark styles (and Windows' own dark mode).
 - macOS cursors: apple_cursor by ful1e5 (GPL-3.0), black for light mode and white for dark mode. The Apple styles pick the right one.
@@ -25,18 +33,18 @@
 - Softer widgets (larger corners, gentler shadows, thinner edges), more translucent menu bar and Dock, slightly smaller interface text.
 - After the panic button, Home offers "Bring back my WinDotra desktop".
 
-## 0.13 â€” A menu bar that works, Control Center, and a panic button
+## 0.13 — A menu bar that works, Control Center, and a panic button
 
 - Menu bar: sits at the very top, shows the app in front, and its menus now work. Apps with classic menus get their real menus; everything else gets File, Edit, View, Window, Go, and Help that send the usual shortcuts. Start, search, and other shell pieces no longer replace the app name.
 - Control Center (like macOS): Wi-Fi with your network name, Bluetooth, screen mirroring, now playing, Focus, dark mode, display brightness (laptop screens), a volume slider, and shortcuts.
 - Full screen: the menu bar, Dock, and island hide while a video, game, or any full-screen app is in front.
 - Apple style goes all the way: macOS cursors (a public-domain set by Lihpe25, now bundled), Inter for title bars and menus, the Windows taskbar hidden while the Dock is on, and the Dock in macOS icon shape.
 - Panic button: "Back to normal Windows" on Home, in the tray menu, in the menu bar's logo menu, and with Ctrl+Alt+Shift+W. It restores the taskbar, cursors, fonts, and wallpaper, turns WinDotra's desktop off, and saves your setup as a profile.
-- Dock: macOS icon shape option and your own icon per app (right-click â†’ Change iconâ€¦).
+- Dock: macOS icon shape option and your own icon per app (right-click → Change icon…).
 - Live wallpaper: a map of your screens as they're arranged, each showing its wallpaper; click one to give it a picture, video, or scene.
 - Fixed: the notch island landed in the top-left corner; a kink at the left edge of the Lines scene.
 
-## 0.12 â€” Menu bar, Dock, and real multi-monitor wallpapers
+## 0.12 — Menu bar, Dock, and real multi-monitor wallpapers
 
 - Live wallpaper: every screen gets its own picture (no more stretching across monitors of different shapes), or one picture can span them all. Fit modes: Fill, Fit, Stretch, Center. Each screen can have its own picture, video, or scene.
 - Video wallpapers: any MP4, MOV, WMV, or MKV Windows can play, looping and muted, decoded with Media Foundation.
@@ -50,7 +58,7 @@
 - Mac-style window with traffic-light buttons and colored icon tiles; menus without the white icon column.
 - Removed the Lock positions switch: widgets only move in Edit mode.
 - Use the photo as the normal Windows wallpaper too, with one-click restore.
-## 0.11 â€” Edit mode and Styles
+## 0.11 — Edit mode and Styles
 
 - Edit mode: widgets and the island only move, resize, recolor, or get removed while editing (right-click a widget or the island, the tray, or the Widgets page). Per-widget size and color, corner resize handle, optional grid with snapping, floating Editing toolbar with Add widget.
 - Styles: Apple, Apple Light, Windows 11, Midnight Neon, Paper, and Rainmeter presets; save, export, import, and share .windotra-style files (look settings only; anything else is rejected). Community styles live in the styles folder.
@@ -60,7 +68,7 @@
 - Focus length presets in the island, timer widget menu, and settings.
 - Fixed: island width setting refused as out of range; WinDotra menus no longer use the Windows menu font; icon fonts can't be applied to Windows, with a one-click fix banner; Reminders count alignment.
 
-## 0.10 â€” Polish
+## 0.10 — Polish
 
 - New dark look for the app after macOS System Settings: graphite window, blue selection, grouped rounded panels, blue switches; the wallpaper editor matches.
 - Widgets are drawn as smooth rounded tiles with a soft shadow (no more black boxes from the OS blur effect, which fails on recent Windows builds). Glass = translucent tiles.
@@ -75,7 +83,7 @@
 - The old option is now clearly labelled **Title bars and menus only** (Windows 11 uses those fonts in few places).
 - Self-test covers the font swap round trip against a throwaway registry key.
 
-## 0.9 Ã¢â‚¬â€ WinDotra
+## 0.9 — WinDotra
 
 - Renamed to WinDotra ("Make Windows yours.") with a new logo, app icon, and tray icon; the build turns `branding/logo.png` (or the vector rendition) into a multi-size .ico. Existing settings and the sign-in entry carry over.
 - First-run setup with Claude app, ChatGPT app, and Claude command-line detection.
@@ -87,7 +95,7 @@
 - Cursor schemes, live previews, and cursor-pack import (.zip/folder/install.inf).
 - Fixed: launcher icons broke saving the profile (caught by the self-test before release).
 
-## 0.8 Ã¢â‚¬â€ Always there
+## 0.8 — Always there
 
 - Live wallpaper fixed on Windows 11 24H2 and later (scene now lives inside Progman below the icons, painted through GDI). Verified on build 26300.
 - AI can act on the PC through a fixed allow-list (open apps/sites/folders, search, music, volume, lock, focus timer, tasks, settings pages). Every action is a card you must Run; there is no command or script action.
@@ -96,7 +104,7 @@
 - Runs in the background: closing the window keeps everything running in the tray; reopening shows the window; desktop launches automatically; optional start at sign-in.
 - New Rainmeter-style F R I D A Y date widget, and macOS-style frosted glass widgets.
 
-## 0.7 Ã¢â‚¬â€ Apple-style island
+## 0.7 — Apple-style island
 
 - Island redesigned after Apple's Dynamic Island: pure black, compact leading/trailing items, springy open/close morph from the center.
 - Expanded media: art, title, artist, album-tinted waveform, elapsed and remaining time, plain white transport controls.
@@ -104,7 +112,7 @@
 - Rainbow glow is now an opt-in "aura" (off by default).
 - Auto AI falls back to the browser when Claude isn't signed in; screenshots render at true size.
 
-## 0.6 Ã¢â‚¬â€ Island
+## 0.6 — Island
 
 - Black Dynamic Island pill with now-playing media from Windows media controls: title, artist, album art, seek bar, previous/play/next.
 - Live waveform driven by the default speakers' peak level.
@@ -113,15 +121,15 @@
 - Open island stays compact; AI, Focus, Tasks, and System open as tabs.
 - `--media-check` diagnostic; fixed a crash when Ollama detection finished without a UI context.
 
-## 0.5 Ã¢â‚¬â€ Calm
+## 0.5 — Calm
 
 - Minimal redesign of the app, wallpaper editor, widgets, and island: paper, ink, hairlines, one accent; light and dark widget backgrounds both stay readable.
 - AI without API keys: Auto, free local Ollama (with detection and one-click model downloads), Claude subscription via the Claude command-line tool, or browser hand-off to claude.ai/ChatGPT. Key fields removed; older cloud settings migrate to Auto.
 - Live wallpaper with Drift, Lines, Dots, and Clock scenes, light/dark, full-screen pause, start-with-desktop, and `--wallpaper-check`.
-- New Home page, eight minimal themes, single-column pages, Ctrl+1Ã¢â‚¬â€œ7 shortcuts.
+- New Home page, eight minimal themes, single-column pages, Ctrl+1–7 shortcuts.
 - Island: click the top line to open, drag it to move; tasks strike through when done.
 
-## 0.4 Ã¢â‚¬â€ Polish
+## 0.4 — Polish
 
 - New design system shared by Studio, the appearance editor, and every overlay: toggle switches, slim sliders, dark dropdowns, inputs, scrollbars, tooltips, and hover/pressed states.
 - Redesigned Studio: icon sidebar with active page, live desktop status, greeting dashboard with stat cards, and clickable module tiles.
@@ -132,10 +140,10 @@
 - Focus timer progress bar; island tabs show which one is active; more quick launchers (Notepad, Snip, Settings).
 - Four new wallpaper moods: Ember, Rose, Aurora, Graphite.
 - Typography specimens for widget and classic Windows fonts; cursor set summary; profile draft summary.
-- Keyboard shortcuts: Ctrl+1Ã¢â‚¬â€œ6 switch pages, Ctrl+L launches the desktop.
+- Keyboard shortcuts: Ctrl+1–6 switch pages, Ctrl+L launches the desktop.
 - Dark Windows title bar, drawn tray icon with Ask AI/Launch menu entries, soft widget shadows, and fade-in.
 
-## 0.3 Ã¢â‚¬â€ AI island
+## 0.3 — AI island
 
 - Added streaming Claude, OpenAI-compatible, and Ollama chat inside the island.
 - Added DPAPI-encrypted API keys and optional per-provider/model history.
@@ -144,7 +152,7 @@
 - Added protocol, encryption, cancellation, history, and real chat-control tests using simulated providers.
 - Kept AI configuration and credentials out of shareable desktop profiles.
 
-## 0.2 Ã¢â‚¬â€ Studio
+## 0.2 — Studio
 
 - Module navigation and tray controls.
 - Clock, system monitor, editable notes, focus timer, and expanding island.
@@ -154,7 +162,7 @@
 - JSON profile import/export with bounded inputs.
 - Recovery, profile, native-layout, and timer tests; Studio/overlay smoke testing.
 
-## 0.1 Ã¢â‚¬â€ Appearance
+## 0.1 — Appearance
 
 - Wallpaper palettes, app/system themes, transparency, and one-step undo.
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -141,7 +141,7 @@ namespace WinCanvas {
    bool systemLight=Get<ComboBox>("SystemMode").SelectedIndex==1;
    var taskbar=Get<Border>("MockTaskbar"); taskbar.Background=Brush(systemLight?"#E3E6F0":"#141821");
    taskbar.Opacity=Get<CheckBox>("Transparency").IsChecked==true?0.85:1;
-   Get<TextBlock>("PaletteLabel").Text=mood+" Â· "+first+" â†’ "+second;
+   Get<TextBlock>("PaletteLabel").Text=mood+" · "+first+" → "+second;
   }
   void Colors() {
    using(var dialog=new System.Windows.Forms.ColorDialog()) {

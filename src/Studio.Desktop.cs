@@ -10,6 +10,8 @@ namespace WinCanvas {
   // The macOS-style menu bar and Dock, both optional.
   void DesktopPage() {
    Header("Menu bar & Dock","A macOS-style menu bar across the top and a Dock at the bottom. The island sits in the middle of the menu bar, like the notch.");
+   PageSwitch("Menu bar",Profile.MenuBar,on=>{Profile.MenuBar=on;RefreshDesktop();});
+   PageSwitch("Dock",Profile.Dock,on=>{Profile.Dock=on;if(on&&Profile.DockApps.Count==0)Profile.DockApps=OverlayManager.DockDefaults();TaskbarForDock(on);RefreshDesktop();});
    var top=Card("Menu bar","The app in front (bold), Window and Go menus, and on the right battery, Wi-Fi, sound, search, Control Center, and the clock. The logo menu has Sleep, Restart, Shut Down, and Lock.");
    Check(top,"Show the menu bar",Profile.MenuBar,v=>{Profile.MenuBar=v;if(v&&Profile.Island&&Profile.IslandShape=="Pill"){Profile.IslandShape="Notch";Profile.Positions.Remove("island");}RefreshDesktop();Page(current);});
    Check(top,"Light menu bar  ·  dark text on frosted white",Profile.MenuBarLight,v=>{Profile.MenuBarLight=v;RefreshDesktop();});
