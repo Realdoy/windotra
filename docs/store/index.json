@@ -47,6 +47,17 @@
   },
   {
    "Type": "widget",
+   "Name": "test widget",
+   "Author": "Realdoy",
+   "AuthorUrl": "https://github.com/Realdoy",
+   "Images": [
+    "previews/test-widget-1.png"
+   ],
+   "Description": "",
+   "File": "widgets/test-widget.windotra-widget"
+  },
+  {
+   "Type": "widget",
    "Name": "World Clock",
    "Author": "WinDotra",
    "AuthorUrl": "",
