@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.21 — Refresh store
+
+- Store: a Refresh store button loads the newest list from the website (new uploads and removed items show up right away).
+
 ## 0.20 — Pictures, details, and a tidier store
 
 - Pictures: publishing adds a real-size picture WinDotra draws of your widget or style, plus up to 3 screenshots of your own.

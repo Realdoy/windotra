@@ -25,7 +25,7 @@ namespace WinCanvas {
    foreach(var i in index.Items.Take(500)){if(i!=null&&i.AuthorUrl==null)i.AuthorUrl="";if(i!=null&&(i.Images==null||i.Images.Any(x=>x==null||!ImagePath.IsMatch(x))))i.Images=new List<string>();if(i==null||(i.Type!="style"&&i.Type!="widget")||String.IsNullOrWhiteSpace(i.Name)||i.Name.Length>60||i.File==null||i.File.Contains("..")||i.File.Length>200)continue;i.Base=baseLocation;list.Add(i);}return list;}
   List<StoreItem> Catalog(){var list=new List<StoreItem>();try{string idx=Path.Combine(LocalStore,"index.json");if(File.Exists(idx))list.AddRange(ReadIndex(File.ReadAllText(idx),LocalStore));}catch(Exception){}
    if(onlineItems!=null)foreach(var i in onlineItems)if(!list.Any(x=>x.Type==i.Type&&x.Name==i.Name))list.Add(i);return list;}
-  async void LoadOnline(){if(onlineTried)return;onlineTried=true;try{using(var http=new HttpClient{Timeout=TimeSpan.FromSeconds(6)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra");string json=await http.GetStringAsync(StoreUrl+"index.json");if(json.Length>512*1024)return;onlineItems=ReadIndex(json,StoreUrl);}if(current=="Store")Dispatcher.BeginInvoke(new Action(()=>Page("Store")));}catch(Exception){onlineItems=null;}}
+  async void LoadOnline(){if(onlineTried)return;onlineTried=true;try{using(var http=new HttpClient{Timeout=TimeSpan.FromSeconds(6)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra");string json=await http.GetStringAsync(StoreUrl+"index.json?t="+DateTime.UtcNow.Ticks);if(json.Length>512*1024)return;onlineItems=ReadIndex(json,StoreUrl);Report("Store refreshed: "+onlineItems.Count+" items online.");}if(current=="Store")Dispatcher.BeginInvoke(new Action(()=>Page("Store")));}catch(Exception){onlineItems=null;}}
   async Task<string> Fetch(StoreItem item){if(item.Base.StartsWith("http")){using(var http=new HttpClient{Timeout=TimeSpan.FromSeconds(10)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra");var text=await http.GetStringAsync(item.Base+item.File);if(text.Length>64*1024)throw new InvalidDataException("That item is too large.");return text;}}return File.ReadAllText(Path.Combine(item.Base,item.File.Replace('/','\\')));}
   // Downloads (or copies) an item, checks it, and keeps it in your styles or widgets folder.
   async void Install(StoreItem item){
@@ -42,6 +42,8 @@ namespace WinCanvas {
    var inner=OverlayManager.RenderCustom(w,pal,live,null,w.Width==2?300:140,110);return new Border{Opacity=w.Opacity,Background=Brush(pal.Back),CornerRadius=new CornerRadius(Math.Min(w.Radius,26)),Padding=new Thickness(14),HorizontalAlignment=HorizontalAlignment.Left,Child=inner,Effect=new System.Windows.Media.Effects.DropShadowEffect{BlurRadius=16,ShadowDepth=2,Opacity=0.3}};}
   void StorePage() {
    Header("Store","Styles and widgets made by the WinDotra community. Everything here is plain settings and text, never programs, so it's safe to install.");LoadOnline();
+   // Refresh: asks the website for the newest list again (new uploads, removed items).
+   var refreshRow=new WrapPanel{Margin=new Thickness(0,0,0,6)};refreshRow.Children.Add(Button("↻  Refresh store",()=>{onlineItems=null;onlineTried=false;isOwner=null;Report("Refreshing the store…");LoadOnline();}));body.Children.Add(refreshRow);
    var catalog=Catalog();
    body.Children.Add(Text(onlineItems!=null?"Showing the online store and the items that ship with WinDotra.":"Showing the items that ship with WinDotra. The online store adds more when it's reachable.",12,Ui.Faint));
    foreach(string type in new[]{"widget","style"}){
