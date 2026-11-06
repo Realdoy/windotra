@@ -1,0 +1,52 @@
+# Uploads to the store are merged automatically when they only add or change valid style or widget files.
+# Safe for pull requests from forks: nothing from the pull request is run, its files are only read and checked.
+name: Store uploads
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths: ["docs/store/**"]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  check-and-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main }
+      - name: Read the uploaded files (without running them)
+        env: { GH_TOKEN: "${{ github.token }}", PR: "${{ github.event.pull_request.number }}", HEAD: "${{ github.event.pull_request.head.sha }}", REPO: "${{ github.event.pull_request.head.repo.full_name }}" }
+        run: |
+          gh api "repos/${{ github.repository }}/pulls/$PR/files" --paginate > files.json
+          python3 - <<'PY'
+          import json, os, subprocess, base64
+          files = json.load(open("files.json"))
+          out = []
+          for f in files:
+              item = {"filename": f["filename"], "status": f["status"], "content": ""}
+              if f["status"] in ("added", "modified"):
+                  raw = subprocess.run(["gh", "api", f"repos/{os.environ['REPO']}/contents/{f['filename']}?ref={os.environ['HEAD']}", "--jq", ".content"], capture_output=True, text=True).stdout
+                  try: item["content"] = base64.b64decode(raw).decode("utf-8")
+                  except Exception: item["content"] = ""
+              out.append(item)
+          json.dump(out, open("upload.json", "w"))
+          PY
+      - name: Check
+        id: check
+        run: |
+          if python3 tools/check-store-pr.py upload.json > result.txt 2>&1; then echo "ok=true" >> "$GITHUB_OUTPUT"; else echo "ok=false" >> "$GITHUB_OUTPUT"; fi
+          cat result.txt
+      - name: Merge
+        if: steps.check.outputs.ok == 'true'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} --squash --repo ${{ github.repository }}
+          git pull --quiet origin main
+          python3 tools/store-index.py
+          git config user.name "windotra-store"
+          git config user.email "store@users.noreply.github.com"
+          if ! git diff --quiet docs/store/index.json; then git add docs/store/index.json && git commit -m "Update the store catalog" && git push origin HEAD:main; fi
+      - name: Explain
+        if: steps.check.outputs.ok != 'true'
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "Thanks! This upload couldn't be added automatically: $(cat result.txt). A maintainer will take a look."

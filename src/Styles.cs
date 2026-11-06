@@ -10,7 +10,7 @@ namespace WinCanvas {
  // It never carries notes, tasks, apps, files, or anything that runs. Files are plain JSON (.windotra-style).
  public class StyleFile {
   public string Format="windotra-style"; public int Version=1;
-  public string Name="",Author="",Description="";
+  public string Name="",Author="",AuthorUrl="",Description="";
   public Dictionary<string,object> Settings=new Dictionary<string,object>();
   [ScriptIgnore] public string Path;
  }

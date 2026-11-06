@@ -12,7 +12,7 @@ using System.Windows.Media;
 namespace WinCanvas {
  public partial class Studio {
   CustomWidget draft; string draftOriginalPath;
-  static readonly string[][] Values={new[]{"Time","{time}"},new[]{"Time (12-hour)","{time:h:mm tt}"},new[]{"Date","{date}"},new[]{"Weekday","{day}"},new[]{"Greeting","{greeting}"},new[]{"Song","{song}"},new[]{"Artist","{artist}"},new[]{"CPU","{cpu}"},new[]{"Memory","{ram}"},new[]{"Battery","{battery}"},new[]{"Days until a date","{days-until:2026-12-24}"},new[]{"Countdown","{countdown:2026-12-31 23:59}"}};
+  static readonly string[][] Values={new[]{"Time","{time}"},new[]{"Time (12-hour)","{time:h:mm tt}"},new[]{"Date","{date}"},new[]{"Weekday","{day}"},new[]{"Greeting","{greeting}"},new[]{"Song","{song}"},new[]{"Artist","{artist}"},new[]{"CPU","{cpu}"},new[]{"Memory","{ram}"},new[]{"Battery","{battery}"},new[]{"Days until a date","{days-until:2026-12-24}"},new[]{"Countdown","{countdown:2026-12-31 23:59}"},new[]{"Claude tokens today","{claude-tokens-today}"},new[]{"Claude tokens this week","{claude-tokens-week}"},new[]{"Claude messages today","{claude-messages-today}"},new[]{"A number from the web","{web:https://api.coinbase.com/v2/prices/BTC-USD/spot|data.amount}"},new[]{"A line from a file","{file:C:\\Users\\you\\note.txt}"},new[]{"A value from a JSON file","{json-file:C:\\path\\data.json|key}"}};
   static readonly string[][] Sizes={new[]{"Huge","56"},new[]{"Big","40"},new[]{"Title","22"},new[]{"Normal","14"},new[]{"Small","12"}};
   static readonly string[][] Colors={new[]{"Auto",""},new[]{"White","#FFFFFF"},new[]{"Black","#1C1C1E"},new[]{"Grey","#8E8E93"},new[]{"Blue","#0A84FF"},new[]{"Red","#FF3B30"},new[]{"Orange","#FF9F0A"},new[]{"Yellow","#FFD60A"},new[]{"Green","#30D158"},new[]{"Pink","#FF375F"},new[]{"Purple","#BF5AF2"}};
   // Starts editing a widget (a copy, so nothing changes until Save).
@@ -71,6 +71,12 @@ namespace WinCanvas {
    var about=new TextBox{Text=draft.Description,MaxLength=200,Margin=new Thickness(0,2,0,8)};about.TextChanged+=(s,e)=>draft.Description=about.Text.Trim();left.Children.Add(Text("Description (for the Store)",12,Ui.Faint));left.Children.Add(about);
    var author=new TextBox{Text=draft.Author,MaxLength=40,Margin=new Thickness(0,2,0,8)};author.TextChanged+=(s,e)=>draft.Author=author.Text.Trim();left.Children.Add(Text("Your name (optional)",12,Ui.Faint));left.Children.Add(author);
    refresh();
+   // Code: the whole widget as text, for people who'd rather type it (or paste one from someone else).
+   var code=new Expander{Header="Code  ·  edit the widget as JSON",Margin=new Thickness(0,4,0,6),Foreground=Brush(Ui.Soft)};var codeBox=new TextBox{AcceptsReturn=true,AcceptsTab=true,Height=220,FontFamily=new FontFamily("Cascadia Mono, Consolas"),FontSize=12,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,HorizontalScrollBarVisibility=ScrollBarVisibility.Auto,TextWrapping=TextWrapping.NoWrap};
+   code.Expanded+=(s,e)=>{codeBox.Text=Pretty(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(draft));};
+   var codePanel=new StackPanel();codePanel.Children.Add(codeBox);codePanel.Children.Add(Button("Apply code",()=>{var w=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<CustomWidget>(codeBox.Text);if(w==null)throw new InvalidOperationException("That isn't widget code.");w.Validate();draft=w;Page(current);Report("Code applied. Check the preview, then save.");}));
+   codePanel.Children.Add(Text("Text rows: Kind \"text\" with Text, Size, Weight (Light, Normal, Medium, SemiBold, Bold), Color (#RRGGBB), Align. Bars: Kind \"bar\" with Bar (cpu, ram, battery, day, week, month, year). Spaces: Kind \"space\" with Size.",11.5,Ui.Faint));
+   code.Content=codePanel;left.Children.Add(code);
    var actions=new WrapPanel{Margin=new Thickness(0,6,0,0)};
    actions.Children.Add(Primary(draftOriginalPath!=null?"Save changes":"Save and put on desktop",()=>{var w=SaveDraft();Report(w.Name+" is on your desktop. Move it with Edit widgets.");}));
    actions.Children.Add(Button("Publish to Store…",()=>{var w=SaveDraft();Publish(w.Path,"widget",w.Name);}));
@@ -84,6 +90,9 @@ namespace WinCanvas {
    if(!Profile.CustomWidgets.Contains(draft.Id))Profile.CustomWidgets.Add(draft.Id);Save();Overlays.Profile=Profile;Overlays.Start();Page(current);return draft;
   }
 
+  // Indents JSON so people can read and edit it.
+  static string Pretty(string json){var b=new StringBuilder();int depth=0;bool inString=false;for(int i=0;i<json.Length;i++){char c=json[i];if(c=='"'&&(i==0||json[i-1]!='\\'))inString=!inString;if(inString){b.Append(c);continue;}
+   if(c=='{'||c=='['){b.Append(c).Append('\n').Append(' ',++depth*2);}else if(c=='}'||c==']'){b.Append('\n').Append(' ',--depth*2).Append(c);}else if(c==','){b.Append(",\n").Append(' ',depth*2);}else if(c==':')b.Append(": ");else b.Append(c);}return b.ToString();}
   // ---- Publishing: one click from WinDotra to a pull request on GitHub. ----
   const string StoreRepo="Realdoy/windotra";
   static string GhPath(){foreach(var p in new[]{@"C:\Program Files\GitHub CLI\gh.exe",Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),@"Programs\GitHub CLI\gh.exe")})if(File.Exists(p))return p;foreach(string dir in (Environment.GetEnvironmentVariable("PATH")??"").Split(';')){try{var p=Path.Combine(dir.Trim(),"gh.exe");if(File.Exists(p))return p;}catch(Exception){}}return null;}
@@ -94,11 +103,15 @@ namespace WinCanvas {
   async void Publish(string file,string type,string name){
    string json=File.ReadAllText(file),folderName=type=="style"?"styles":"widgets",fileName=Safe(name).ToLowerInvariant().Replace(' ','-')+(type=="style"?Styles.Extension:CustomWidget.Extension);
    string gh=GhPath();
-   if(gh==null){string url="https://github.com/"+StoreRepo+"/new/main/docs/store/"+folderName+"?filename="+Uri.EscapeDataString(fileName)+"&value="+Uri.EscapeDataString(json);Process.Start(new ProcessStartInfo(url){UseShellExecute=true});Report("GitHub opened with your "+type+" filled in. Click “Propose changes”, then “Create pull request”.");return;}
+   if(gh==null){if(MessageBox.Show(this,"Publishing needs the free GitHub app, so your GitHub name is shown as the author.\n\nInstall it now? A window opens and runs: winget install GitHub.cli",Brand.Name,MessageBoxButton.OKCancel,MessageBoxImage.Information)==MessageBoxResult.OK)Process.Start(new ProcessStartInfo("cmd.exe","/k winget install GitHub.cli && gh auth login --web"){UseShellExecute=true});Report("When GitHub is installed and you're signed in, click Publish again.");return;}
+   string login;try{login=await Task.Run(()=>Gh(gh,"api user --jq .login"));}catch(Exception){login=null;}
+   if(String.IsNullOrEmpty(login)){Process.Start(new ProcessStartInfo("cmd.exe","/k \""+gh+"\" auth login --web --git-protocol https"){UseShellExecute=true});Report("Sign in to GitHub in the window that opened, then click Publish again.");return;}
+   // You're the author: your GitHub name and profile link go into the file.
+   var fields=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);fields["Author"]=login;fields["AuthorUrl"]="https://github.com/"+login;json=Pretty(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(fields));
    Report("Publishing "+name+" to the Store…");
    try{
     string pr=await Task.Run(()=>{
-     string me=Gh(gh,"api user --jq .login");string owner=StoreRepo.Split('/')[0],repo=StoreRepo;
+     string me=login;string owner=StoreRepo.Split('/')[0],repo=StoreRepo;
      if(!me.Equals(owner,StringComparison.OrdinalIgnoreCase)){Gh(gh,"repo fork "+StoreRepo+" --clone=false");repo=me+"/windotra";System.Threading.Thread.Sleep(3000);}
      string sha=Gh(gh,"api repos/"+StoreRepo+"/git/ref/heads/main --jq .object.sha");string branch="store-"+fileName.Replace('.','-')+"-"+DateTime.Now.ToString("yyyyMMddHHmmss");
      Gh(gh,"api repos/"+repo+"/git/refs -f ref=refs/heads/"+branch+" -f sha="+sha);
@@ -107,7 +120,7 @@ namespace WinCanvas {
      string request=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new Dictionary<string,object>{{"title","Store: "+name+" ("+type+")"},{"head",me+":"+branch},{"base","main"},{"body","Shared from WinDotra. The store catalog updates itself when this is merged."}});
      return Gh(gh,"api repos/"+StoreRepo+"/pulls --input - --jq .html_url",request);});
     Process.Start(new ProcessStartInfo(pr){UseShellExecute=true});Report("Published! Your pull request is open on GitHub. Once it's merged, everyone sees "+name+" in the Store.");
-   }catch(Exception e){Report("Couldn't publish with the GitHub app ("+e.Message+"). Opening GitHub in your browser instead.");string url="https://github.com/"+StoreRepo+"/new/main/docs/store/"+folderName+"?filename="+Uri.EscapeDataString(fileName)+"&value="+Uri.EscapeDataString(json);Process.Start(new ProcessStartInfo(url){UseShellExecute=true});}
+   }catch(Exception e){Report("Couldn't publish: "+e.Message);}
   }
  }
 }

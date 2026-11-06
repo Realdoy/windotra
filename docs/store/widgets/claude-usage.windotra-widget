@@ -1,0 +1,61 @@
+{
+ "Format": "windotra-widget",
+ "Version": 1,
+ "Name": "Claude Usage",
+ "Author": "Realdoy",
+ "AuthorUrl": "https://github.com/Realdoy",
+ "Description": "Your Claude Code tokens today and this week, read from Claude Code's own logs on your PC.",
+ "Background": "#1F1A17",
+ "Accent": "#D97757",
+ "Link": "https://claude.ai/settings/usage",
+ "Width": 1,
+ "Opacity": 1,
+ "Radius": 26,
+ "Lines": [
+  {
+   "Kind": "text",
+   "Text": "Claude",
+   "Size": 15,
+   "Weight": "SemiBold",
+   "Color": "#D97757",
+   "Align": "Left",
+   "Bar": "day"
+  },
+  {
+   "Kind": "text",
+   "Text": "{claude-tokens-today}",
+   "Size": 36,
+   "Weight": "Light",
+   "Color": "#FFFFFF",
+   "Align": "Left",
+   "Bar": "day"
+  },
+  {
+   "Kind": "text",
+   "Text": "tokens today",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#A1A1A6",
+   "Align": "Left",
+   "Bar": "day"
+  },
+  {
+   "Kind": "space",
+   "Text": "",
+   "Size": 6,
+   "Weight": "Normal",
+   "Color": "",
+   "Align": "Left",
+   "Bar": "day"
+  },
+  {
+   "Kind": "text",
+   "Text": "{claude-tokens-week} this week  \u00b7  {claude-messages-today} replies",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#A1A1A6",
+   "Align": "Left",
+   "Bar": "day"
+  }
+ ]
+}

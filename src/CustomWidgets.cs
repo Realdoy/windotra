@@ -17,7 +17,7 @@ namespace WinCanvas {
  public static class WidgetBars { public static readonly string[] All={"cpu","ram","battery","day","week","month","year"}; }
  public class CustomWidget {
   public string Format="windotra-widget"; public int Version=1;
-  public string Name="",Author="",Description="",Background="",Accent="",Link=""; public int Width=1; public double Opacity=1, Radius=26;
+  public string Name="",Author="",AuthorUrl="",Description="",Background="",Accent="",Link=""; public int Width=1; public double Opacity=1, Radius=26;
   public List<WidgetLine> Lines=new List<WidgetLine>();
   [ScriptIgnore] public string Path;
   public const string Extension=".windotra-widget";
@@ -25,6 +25,7 @@ namespace WinCanvas {
   static bool Hex(string v){return v==null||v.Length==0||Regex.IsMatch(v,"^#([0-9A-Fa-f]{2})?[0-9A-Fa-f]{6}$");}
   public void Validate() {
    if(Lines!=null)foreach(var l in Lines)if(l!=null){if(l.Kind==null)l.Kind="text";if(l.Bar==null)l.Bar="day";}
+   if(AuthorUrl==null)AuthorUrl="";if(AuthorUrl.Length>0&&!System.Text.RegularExpressions.Regex.IsMatch(AuthorUrl,"^https://github\\.com/[A-Za-z0-9-]{1,39}$"))throw new InvalidDataException("The author link must be a GitHub profile.");
    if(Opacity<0.2||Opacity>1||Radius<0||Radius>40)throw new InvalidDataException("A widget's opacity or corners are out of range.");
    if(Format!="windotra-widget"||Version!=1||String.IsNullOrWhiteSpace(Name)||Name.Length>40||(Author??"").Length>40||(Description??"").Length>200||(Width!=1&&Width!=2)||!Hex(Background)||!Hex(Accent)||Lines==null||Lines.Count==0||Lines.Count>12)throw new InvalidDataException("That isn't a valid WinDotra widget.");
    if(!String.IsNullOrEmpty(Link)){Uri u;if(Link.Length>1000||!Uri.TryCreate(Link,UriKind.Absolute,out u)||(u.Scheme!="https"&&u.Scheme!="http"))throw new InvalidDataException("A widget link must be a web address (https://…).");}
@@ -45,7 +46,7 @@ namespace WinCanvas {
       case "greeting":return now.Hour<5?"Good night":now.Hour<12?"Good morning":now.Hour<18?"Good afternoon":"Good evening";
       case "days-until":{DateTime d;if(!DateTime.TryParse(arg,CultureInfo.InvariantCulture,DateTimeStyles.None,out d))return "?";return Math.Max(0,(int)Math.Ceiling((d.Date-now.Date).TotalDays)).ToString();}
       case "countdown":{DateTime d;if(!DateTime.TryParse(arg,CultureInfo.InvariantCulture,DateTimeStyles.None,out d))return "?";var left=d-now;if(left<TimeSpan.Zero)left=TimeSpan.Zero;return (left.Days>0?left.Days+"d ":"")+left.Hours.ToString("00")+":"+left.Minutes.ToString("00")+":"+left.Seconds.ToString("00");}
-      default:return live!=null?live(key)??m.Value:m.Value;
+      default:if(WidgetData.Keys.Contains(key))return WidgetData.Get(key,arg??"");return live!=null?live(key)??m.Value:m.Value;
      }
     }catch(FormatException){return m.Value;}
    });

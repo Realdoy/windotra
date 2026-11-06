@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.18 — Data widgets, code mode, open uploads, and reports
+
+- Data in widgets: {claude-tokens-today}, {claude-tokens-week}, {claude-messages-today} (from Claude Code's logs on your PC), {web:https://…|path} for any JSON on the web, {file:…} and {json-file:…|path} for files on your PC.
+- New store widget: Claude Usage.
+- Code mode: edit a widget's full JSON in the widget maker (Code), or paste one in.
+- Publishing needs a GitHub sign-in; your GitHub name and profile link are shown as the author in the app and on the website.
+- Uploads are checked and added to the store automatically (only valid style and widget files; nothing is run).
+- Report button on every store item, in the app and on the website.
+
 ## 0.17 — Fixes and more widget options
 
 - Fixed: broken symbols and empty boxes in the sidebar and quick switches.

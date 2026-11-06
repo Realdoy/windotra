@@ -11,16 +11,17 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
 namespace WinCanvas {
- public class StoreItem { public string Type="",Name="",Author="",Description="",File=""; [ScriptIgnore] public string Base; }
+ public class StoreItem { public string Type="",Name="",Author="",AuthorUrl="",Description="",File=""; [ScriptIgnore] public string Base; }
  public class StoreIndex { public List<StoreItem> Items=new List<StoreItem>(); }
  public partial class Studio {
   // The community store lives on the project's GitHub Pages site (docs/store). A copy ships inside WinDotra, so the
   // store works offline; the online catalog adds whatever people have shared since.
+  static string ReportUrl(string type,string name,string file){return "https://github.com/Realdoy/windotra/issues/new?labels=report&title="+Uri.EscapeDataString("Report "+type+": "+name)+"&body="+Uri.EscapeDataString("Item: "+name+"\nFile: docs/store/"+file+"\n\nWhat's wrong with it?\n");}
   public const string StoreUrl="https://realdoy.github.io/windotra/store/";
   static string LocalStore{get{return Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"store");}}
   static List<StoreItem> onlineItems; static bool onlineTried;
   static List<StoreItem> ReadIndex(string json,string baseLocation){var index=new JavaScriptSerializer().Deserialize<StoreIndex>(json);var list=new List<StoreItem>();if(index==null||index.Items==null)return list;
-   foreach(var i in index.Items.Take(500)){if(i==null||(i.Type!="style"&&i.Type!="widget")||String.IsNullOrWhiteSpace(i.Name)||i.Name.Length>60||i.File==null||i.File.Contains("..")||i.File.Length>200)continue;i.Base=baseLocation;list.Add(i);}return list;}
+   foreach(var i in index.Items.Take(500)){if(i!=null&&i.AuthorUrl==null)i.AuthorUrl="";if(i==null||(i.Type!="style"&&i.Type!="widget")||String.IsNullOrWhiteSpace(i.Name)||i.Name.Length>60||i.File==null||i.File.Contains("..")||i.File.Length>200)continue;i.Base=baseLocation;list.Add(i);}return list;}
   List<StoreItem> Catalog(){var list=new List<StoreItem>();try{string idx=Path.Combine(LocalStore,"index.json");if(File.Exists(idx))list.AddRange(ReadIndex(File.ReadAllText(idx),LocalStore));}catch(Exception){}
    if(onlineItems!=null)foreach(var i in onlineItems)if(!list.Any(x=>x.Type==i.Type&&x.Name==i.Name))list.Add(i);return list;}
   async void LoadOnline(){if(onlineTried)return;onlineTried=true;try{using(var http=new HttpClient{Timeout=TimeSpan.FromSeconds(6)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra");string json=await http.GetStringAsync(StoreUrl+"index.json");if(json.Length>512*1024)return;onlineItems=ReadIndex(json,StoreUrl);}if(current=="Store")Dispatcher.BeginInvoke(new Action(()=>Page("Store")));}catch(Exception){onlineItems=null;}}
@@ -51,8 +52,9 @@ namespace WinCanvas {
      else{try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/','\\'));if(path!=null)card.Children.Add(StylePreview(Styles.Read(path)));}catch(Exception){}}
      card.Children.Add(new TextBlock{Text=item.Name,FontSize=14,FontWeight=FontWeights.SemiBold,Margin=new Thickness(2,10,0,2)});
      card.Children.Add(new TextBlock{Text=item.Description,FontSize=11.5,Foreground=Brush(Ui.Soft),TextWrapping=TextWrapping.Wrap,Height=46,Margin=new Thickness(2,0,0,2)});
-     card.Children.Add(new TextBlock{Text="by "+(item.Author.Length>0?item.Author:"someone")+(item.Base.StartsWith("http")?"  ·  online":""),FontSize=11,Foreground=Brush(Ui.Faint),Margin=new Thickness(2,0,0,8)});
-     var get=Primary("Get",()=>Install(item));get.Margin=new Thickness(2,0,0,0);get.Padding=new Thickness(18,5,18,5);card.Children.Add(get);
+     var by=new TextBlock{Text="by "+(item.Author.Length>0?item.Author:"someone")+(item.Base.StartsWith("http")?"  ·  online":""),FontSize=11,Foreground=Brush(item.AuthorUrl.StartsWith("https://github.com/")?"#64B5FF":Ui.Faint),Margin=new Thickness(2,0,0,8)};if(item.AuthorUrl.StartsWith("https://github.com/")){string profile=item.AuthorUrl;by.Cursor=System.Windows.Input.Cursors.Hand;by.ToolTip=profile;by.MouseLeftButtonUp+=(s,e)=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(profile){UseShellExecute=true});}card.Children.Add(by);
+     var getRow=new StackPanel{Orientation=Orientation.Horizontal};var get=Primary("Get",()=>Install(item));get.Margin=new Thickness(2,0,8,0);get.Padding=new Thickness(18,5,18,5);getRow.Children.Add(get);
+     var report=Ghost("Report",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ReportUrl(item.Type,item.Name,item.File)){UseShellExecute=true}));report.Foreground=Brush("#FF6961");report.ToolTip="Something wrong or offensive? Tell the maintainers on GitHub.";getRow.Children.Add(report);card.Children.Add(getRow);
      grid.Children.Add(new Border{Background=Brush(Ui.Surface),CornerRadius=new CornerRadius(16),Margin=new Thickness(0,0,12,12),Child=card});}
     section.Children.Add(grid);
    }
@@ -68,7 +70,7 @@ namespace WinCanvas {
     row.Children.Add(tools);yours.Children.Add(row);}
    var importRow=new WrapPanel();importRow.Children.Add(Button("Import a widget or style…",()=>{var d=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra files|*"+CustomWidget.Extension+";*"+Styles.Extension};if(d.ShowDialog(this)!=true)return;Install(new StoreItem{Type=d.FileName.EndsWith(Styles.Extension)?"style":"widget",Name=Path.GetFileNameWithoutExtension(d.FileName),File=Path.GetFileName(d.FileName),Base=Path.GetDirectoryName(d.FileName)});}));yours.Children.Add(importRow);
    WidgetMaker();
-   var share=Card("Share yours","Click Publish… on any of your widgets (or Publish to Store on a style in Styles). WinDotra sends it to the community store on GitHub for you. With the GitHub app (gh) signed in it's fully automatic; otherwise GitHub opens with your file filled in. Once it's accepted, everyone sees it here.");
+   var share=Card("Share yours","Click Publish… on any of your widgets (or Publish to Store on a style in Styles). You sign in with GitHub once; your GitHub name and profile link are shown as the author. Once it's accepted, everyone sees it here.");
    share.Children.Add(Button("Open the store website ↗",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(StoreUrl.Replace("store/","")){UseShellExecute=true})));
   }
  }

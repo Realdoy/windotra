@@ -21,7 +21,7 @@ namespace WinCanvas {
   readonly DispatcherTimer animate=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(33)};
   System.Windows.Forms.NotifyIcon tray; GlobalShortcut shortcut,panic; bool trayHinted,quitting,launched;
   public void Quit(){quitting=true;Close();}
-  public const string AppVersion="0.17";
+  public const string AppVersion="0.18";
   static string updateTag,updateUrl;
   // Asks GitHub for the newest release once per start; if it's newer, says so in the tray, the status bar, and on Home.
   async void CheckForUpdate(){try{using(var http=new System.Net.Http.HttpClient{Timeout=TimeSpan.FromSeconds(8)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra/"+AppVersion);var json=await http.GetStringAsync("https://api.github.com/repos/Realdoy/windotra/releases/latest");var data=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);string tag=Convert.ToString(data["tag_name"]).TrimStart('v');Version latest,mine;
