@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20 — Pictures, details, and a tidier store
+
+- Pictures: publishing adds a real-size picture WinDotra draws of your widget or style, plus up to 3 screenshots of your own.
+- Details: every store item opens a details view (in the app and on the website) with its pictures at real size, the full description, the author, Get/Download, and Report.
+- The store shows 6 items per section, with View more / Show all.
+- System Line widget now uses progress bars with percentages.
+- Fixed: the automatic store-upload workflow had an invalid line and never ran.
+
 ## 0.19 — Previews, percentages, and store moderation
 
 - Website: every widget and style in the store now shows a preview (widgets drawn from their rows, styles as a tiny desktop).

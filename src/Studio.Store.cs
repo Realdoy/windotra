@@ -11,17 +11,18 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 
 namespace WinCanvas {
- public class StoreItem { public string Type="",Name="",Author="",AuthorUrl="",Description="",File=""; [ScriptIgnore] public string Base; }
+ public class StoreItem { public string Type="",Name="",Author="",AuthorUrl="",Description="",File=""; public List<string> Images=new List<string>(); [ScriptIgnore] public string Base; }
  public class StoreIndex { public List<StoreItem> Items=new List<StoreItem>(); }
  public partial class Studio {
   // The community store lives on the project's GitHub Pages site (docs/store). A copy ships inside WinDotra, so the
   // store works offline; the online catalog adds whatever people have shared since.
   static string ReportUrl(string type,string name,string file){return "https://github.com/Realdoy/windotra/issues/new?labels=report&title="+Uri.EscapeDataString("Report "+type+": "+name)+"&body="+Uri.EscapeDataString("Item: "+name+"\nFile: docs/store/"+file+"\n\nWhat's wrong with it?\n");}
+  readonly HashSet<string> expandedSections=new HashSet<string>();
   public const string StoreUrl="https://realdoy.github.io/windotra/store/";
   static string LocalStore{get{return Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"store");}}
   static List<StoreItem> onlineItems; static bool onlineTried;
   static List<StoreItem> ReadIndex(string json,string baseLocation){var index=new JavaScriptSerializer().Deserialize<StoreIndex>(json);var list=new List<StoreItem>();if(index==null||index.Items==null)return list;
-   foreach(var i in index.Items.Take(500)){if(i!=null&&i.AuthorUrl==null)i.AuthorUrl="";if(i==null||(i.Type!="style"&&i.Type!="widget")||String.IsNullOrWhiteSpace(i.Name)||i.Name.Length>60||i.File==null||i.File.Contains("..")||i.File.Length>200)continue;i.Base=baseLocation;list.Add(i);}return list;}
+   foreach(var i in index.Items.Take(500)){if(i!=null&&i.AuthorUrl==null)i.AuthorUrl="";if(i!=null&&(i.Images==null||i.Images.Any(x=>x==null||!ImagePath.IsMatch(x))))i.Images=new List<string>();if(i==null||(i.Type!="style"&&i.Type!="widget")||String.IsNullOrWhiteSpace(i.Name)||i.Name.Length>60||i.File==null||i.File.Contains("..")||i.File.Length>200)continue;i.Base=baseLocation;list.Add(i);}return list;}
   List<StoreItem> Catalog(){var list=new List<StoreItem>();try{string idx=Path.Combine(LocalStore,"index.json");if(File.Exists(idx))list.AddRange(ReadIndex(File.ReadAllText(idx),LocalStore));}catch(Exception){}
    if(onlineItems!=null)foreach(var i in onlineItems)if(!list.Any(x=>x.Type==i.Type&&x.Name==i.Name))list.Add(i);return list;}
   async void LoadOnline(){if(onlineTried)return;onlineTried=true;try{using(var http=new HttpClient{Timeout=TimeSpan.FromSeconds(6)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra");string json=await http.GetStringAsync(StoreUrl+"index.json");if(json.Length>512*1024)return;onlineItems=ReadIndex(json,StoreUrl);}if(current=="Store")Dispatcher.BeginInvoke(new Action(()=>Page("Store")));}catch(Exception){onlineItems=null;}}
@@ -47,17 +48,23 @@ namespace WinCanvas {
     var items=catalog.Where(i=>i.Type==type).ToList();if(items.Count==0)continue;
     var section=Card(type=="widget"?"Widgets":"Styles",type=="widget"?"Install one and it appears on your desktop. Move it with Edit widgets.":"Whole desktops: wallpaper, widgets, island, menu bar, and Dock.");
     var grid=new UniformGrid{Columns=3,Margin=new Thickness(0,0,-12,0)};
-    foreach(var it in items){var item=it;var card=new StackPanel{Margin=new Thickness(12)};
-     if(item.Type=="widget"){try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/','\\'));if(path!=null)card.Children.Add(WidgetPreview(CustomWidget.Read(path)));}catch(Exception){}}
-     else{try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/','\\'));if(path!=null)card.Children.Add(StylePreview(Styles.Read(path)));}catch(Exception){}}
+    bool all=expandedSections.Contains(type);int shown=0;
+    foreach(var it in items){var item=it;if(!all&&shown>=6)break;shown++;var card=new StackPanel{Margin=new Thickness(12)};FrameworkElement drawn=null;
+     try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/',Path.DirectorySeparatorChar));if(path!=null)drawn=item.Type=="widget"?(FrameworkElement)WidgetPreview(CustomWidget.Read(path)):StylePreview(Styles.Read(path));}catch(Exception){}
+     ImageSource picture=item.Images.Count>0?Picture(item,item.Images[0]):null;
+     var frame=new Border{Height=150,CornerRadius=new CornerRadius(12),Background=Brush("#111113"),ClipToBounds=true,Cursor=System.Windows.Input.Cursors.Hand,ToolTip="Details"};
+     if(picture!=null)frame.Child=new Image{Source=picture,Stretch=Stretch.Uniform,Margin=new Thickness(6)};else if(drawn!=null)frame.Child=new Viewbox{Child=drawn,Stretch=Stretch.Uniform,StretchDirection=StretchDirection.DownOnly,Margin=new Thickness(8)};else frame.Child=new TextBlock{Text="No preview",Foreground=Brush(Ui.Faint),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};
+     FrameworkElement big=null;try{var path=item.Base.StartsWith("http")?null:Path.Combine(item.Base,item.File.Replace('/',Path.DirectorySeparatorChar));if(path!=null)big=item.Type=="widget"?RealWidget(CustomWidget.Read(path)):(FrameworkElement)new Border{Width=640,Child=StylePreview(Styles.Read(path)),LayoutTransform=new ScaleTransform(1.6,1.6)};}catch(Exception){}
+     frame.MouseLeftButtonUp+=(o,e)=>ShowDetails(item,big);card.Children.Add(frame);
      card.Children.Add(new TextBlock{Text=item.Name,FontSize=14,FontWeight=FontWeights.SemiBold,Margin=new Thickness(2,10,0,2)});
      card.Children.Add(new TextBlock{Text=item.Description,FontSize=11.5,Foreground=Brush(Ui.Soft),TextWrapping=TextWrapping.Wrap,Height=46,Margin=new Thickness(2,0,0,2)});
      var by=new TextBlock{Text="by "+(item.Author.Length>0?item.Author:"someone")+(item.Base.StartsWith("http")?"  ·  online":""),FontSize=11,Foreground=Brush(item.AuthorUrl.StartsWith("https://github.com/")?"#64B5FF":Ui.Faint),Margin=new Thickness(2,0,0,8)};if(item.AuthorUrl.StartsWith("https://github.com/")){string profile=item.AuthorUrl;by.Cursor=System.Windows.Input.Cursors.Hand;by.ToolTip=profile;by.MouseLeftButtonUp+=(s,e)=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(profile){UseShellExecute=true});}card.Children.Add(by);
      var getRow=new StackPanel{Orientation=Orientation.Horizontal};var get=Primary("Get",()=>Install(item));get.Margin=new Thickness(2,0,8,0);get.Padding=new Thickness(18,5,18,5);getRow.Children.Add(get);
-     var report=Ghost("Report",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ReportUrl(item.Type,item.Name,item.File)){UseShellExecute=true}));report.Foreground=Brush("#FF6961");report.ToolTip="Something wrong or offensive? Tell the maintainers on GitHub.";getRow.Children.Add(report);
+     var report=Ghost("Report",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ReportUrl(item.Type,item.Name,item.File)){UseShellExecute=true}));report.Foreground=Brush("#FF6961");report.ToolTip="Something wrong or offensive? Tell the maintainers on GitHub.";getRow.Children.Add(report);var details=Ghost("Details",()=>ShowDetails(item,big));getRow.Children.Add(details);
      if(IsStoreOwner()){var remove=Ghost("Remove",()=>RemoveFromStore(item));remove.ToolTip="You own the store: remove this item for everyone";getRow.Children.Add(remove);}card.Children.Add(getRow);
      grid.Children.Add(new Border{Background=Brush(Ui.Surface),CornerRadius=new CornerRadius(16),Margin=new Thickness(0,0,12,12),Child=card});}
     section.Children.Add(grid);
+    if(items.Count>6){string t=type;section.Children.Add(Button(all?"Show fewer":"Show all "+items.Count,()=>{if(expandedSections.Contains(t))expandedSections.Remove(t);else expandedSections.Add(t);Page(current);}));}
    }
    // Your own widgets: installed and made here.
    var mine=CustomWidget.All(folder);var yours=Card("Your widgets",mine.Count==0?"None yet. Get one above or make your own below.":"Switch them on and off, edit, or export them to share.");

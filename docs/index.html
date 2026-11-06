@@ -52,6 +52,15 @@
  .wd .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15}
  .wd .bar{height:6px;border-radius:3px;background:rgba(127,127,127,.3);margin:5px 0;overflow:hidden}
  .wd .bar i{display:block;height:100%}
+ .more{display:block;margin:18px auto 0;background:var(--panel2);color:var(--ink);border:0;border-radius:999px;padding:10px 22px;font:inherit;font-weight:600;cursor:pointer}
+ .pv img{max-width:100%;max-height:100%;object-fit:contain}
+ .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:flex-start;justify-content:center;z-index:20;overflow:auto;padding:40px 16px}
+ .modal.on{display:flex}
+ .sheet{background:var(--panel);border-radius:22px;max-width:980px;width:100%;padding:28px;border:1px solid var(--line);position:relative}
+ .sheet .close{position:absolute;top:16px;right:16px;background:var(--panel2);border:0;color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+ .shots{display:flex;flex-wrap:wrap;gap:14px;margin:18px 0}
+ .shots>div{background:#111;border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:center;max-width:100%;overflow:auto}
+ .shots img{max-width:100%;height:auto;display:block}
  footer{color:var(--soft);font-size:13px;padding:40px 0 60px;border-top:1px solid var(--line)}
  @media (max-width:600px){nav a.hide{display:none}.hero{padding-top:60px}}
 </style>
@@ -85,6 +94,7 @@
  <p class="sub">Styles and widgets from the community. They're plain JSON, never programs, so they're safe to install. In WinDotra, open <b>Store</b> and click <b>Get</b>, or download a file here and use <b>Import</b>.</p>
  <div class="tabs"><button class="on" data-type="all">All</button><button data-type="widget">Widgets</button><button data-type="style">Styles</button></div>
  <div class="store" id="items"><p class="sub">Loading…</p></div>
+ <button class="more" id="more" style="display:none" onclick="showAll=!showAll;show(current)">View more</button>
 </div></section>
 
 <section id="make"><div class="wrap">
@@ -108,6 +118,7 @@
  <p class="sub">Live values: {time} {time:h:mm tt} {date} {date:dddd} {day} {greeting} {cpu} {ram} {battery} {song} {artist} {days-until:2026-12-24} {countdown:2026-12-31 23:59}.</p>
 </div></section>
 
+<div class="modal" id="modal" onclick="if(event.target===this)closeDetails()"><div class="sheet" id="sheet"></div></div>
 <footer><div class="wrap">WinDotra is free and open source (MIT). macOS cursors: apple_cursor by ful1e5 (GPL-3.0). Inter by Rasmus Andersson (SIL OFL). Not affiliated with Apple or Microsoft.</div></footer>
 
 <script>
@@ -123,6 +134,20 @@
    const size=Math.min((l.Size||14)*0.72,40),color=l.Color||((l.Size||14)<=12.5?soft:(w.Accent&&(l.Size||14)>=20?w.Accent:ink));
    return `<div class="ln" style="font-size:${size}px;font-weight:${{Light:300,Normal:400,Medium:500,SemiBold:600,Bold:700}[l.Weight]||400};color:${esc(color)};text-align:${(l.Align||'Left').toLowerCase()}">${esc(fill(l.Text))||'&nbsp;'}</div>`;}).join('');
   return `<div class="wd" style="background:${esc(col(bg))};opacity:${w.Opacity||1};border-radius:${Math.min(w.Radius||22,26)}px;width:${w.Width===2?'88%':'64%'}">${rows}</div>`;}
+ function realWidget(w){const bg=w.Background||'#1c1c1e',ink=light(bg)?'#1c1917':'#f5f5f7',soft=light(bg)?'#78716c':'#a1a1aa';
+  const rows=(w.Lines||[]).map(l=>{const k=l.Kind||'text';if(k==='space')return `<div style="height:${l.Size||8}px"></div>`;
+   if(k==='bar'){const v={cpu:23,ram:48,battery:82,day:55,week:40,month:20,year:85}[l.Bar]||50;return `<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><div style="flex:1;height:${Math.max(3,Math.min(l.Size||6,20))}px;border-radius:9px;background:rgba(127,127,127,.3);overflow:hidden"><i style="display:block;height:100%;width:${v}%;background:${esc(l.Color||w.Accent||'#0a84ff')}"></i></div>${l.ShowValue?`<span style="font-size:12px;font-weight:600;color:${soft}">${v}%</span>`:''}</div>`;}
+   const color=l.Color||((l.Size||14)<=12.5?soft:(w.Accent&&(l.Size||14)>=20?w.Accent:ink));
+   return `<div style="font-size:${l.Size||14}px;line-height:1.2;margin:1px 0;font-weight:${{Light:300,Normal:400,Medium:500,SemiBold:600,Bold:700}[l.Weight]||400};color:${esc(color)};text-align:${(l.Align||'Left').toLowerCase()};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(fill(l.Text))||'&nbsp;'}</div>`;}).join('');
+  return `<div style="background:${esc(col(bg))};opacity:${w.Opacity||1};border-radius:${w.Radius||26}px;padding:16px;width:${w.Width===2?360:174}px;height:176px;box-sizing:border-box;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)">${rows}</div>`;}
+ function details(index){const i=all[index];if(!i)return;fetch('store/'+i.File).then(r=>r.json()).then(d=>{
+  const shots=(i.Images||[]).map(p=>`<div><img src="store/${encodeURI(p)}" alt=""></div>`).join('');
+  const drawn=i.Type==='widget'?`<div>${realWidget(d)}</div>`:`<div style="position:relative;width:640px;height:360px;max-width:100%;padding:0;overflow:hidden;border-radius:14px">${styleHtml(d)}</div>`;
+  const author=/^https:\/\/github\.com\/[A-Za-z0-9-]+$/.test(i.AuthorUrl||'')?`<a href="${esc(i.AuthorUrl)}">${esc(i.Author)}</a>`:esc(i.Author||'someone');
+  document.getElementById('sheet').innerHTML=`<button class="close" onclick="closeDetails()">×</button><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h2 style="margin:6px 0 2px">${esc(i.Name)}</h2><p style="color:var(--soft);margin:0 0 6px">by ${author}</p><p style="max-width:640px">${esc(i.Description)}</p><div class="shots">${shots||drawn}</div>${shots?`<p class="sub" style="margin:0 0 8px">Drawn preview, real size:</p><div class="shots">${drawn}</div>`:''}<p><a class="btn primary" href="store/${encodeURI(i.File)}" download>Download</a> <a class="btn ghost" style="color:#ff6961" href="https://github.com/Realdoy/windotra/issues/new?labels=report&title=${encodeURIComponent('Report '+i.Type+': '+i.Name)}">Report</a></p><p class="sub" style="font-size:13px">In WinDotra: Store → Get. Or download the file and use Import.</p>`;
+  document.getElementById('modal').classList.add('on');});}
+ function closeDetails(){document.getElementById('modal').classList.remove('on');}
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetails();});
  function styleHtml(st){const s=st.Settings||{},dark=s.SceneDark!==false;const c1=s.SceneColor1||(dark?'#29457a':'#8db8ff'),c2=s.SceneColor2||(dark?'#5b3a8c':'#c3a6ff'),c3=s.SceneColor3||(dark?'#8c3a62':'#ffb0c4');
   let h=`<div style="position:absolute;inset:0;background:linear-gradient(160deg,${esc(c1)},${esc(c2)} 55%,${esc(c3)})"></div>`;
   if(s.MenuBar)h+=`<div style="position:absolute;top:0;left:0;right:0;height:10px;background:${s.MenuBarLight?'rgba(242,242,247,.8)':'rgba(22,22,24,.7)'}"></div>`;
@@ -131,10 +156,11 @@
   else h+=`<div style="position:absolute;left:10px;top:${s.MenuBar?20:12}px;width:74px;height:46px;border-radius:12px;background:${esc(s.Background||'#1c1c1e')};box-shadow:0 4px 12px rgba(0,0,0,.3);padding:6px 9px;font-size:14px;font-weight:300;color:${light(s.Background||'#1c1c1e')?'#1c1917':'#f5f5f7'}">10:09<div style="height:3px;width:40px;border-radius:2px;margin-top:4px;background:${esc(s.Accent||'#0a84ff')}"></div></div>`;
   if(s.Dock)h+=`<div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);display:flex;gap:3px;padding:3px;border-radius:7px;background:${s.DockLight?'rgba(245,245,247,.75)':'rgba(30,30,32,.65)'}">${['#0a84ff','#34c759','#ff9f0a','#ff375f','#af52de','#5ac8fa','#8e8e93'].map(c=>`<i style="width:11px;height:11px;border-radius:3px;background:${c}"></i>`).join('')}</div>`;
   return h;}
- function previews(){document.querySelectorAll('.pv[data-file]').forEach(el=>{fetch('store/'+el.dataset.file).then(r=>r.json()).then(d=>{el.innerHTML=el.dataset.type==='widget'?widgetHtml(d):styleHtml(d);}).catch(()=>{el.textContent='No preview';});});}
+ function previews(){document.querySelectorAll('.pv[data-file]').forEach(el=>{if(el.dataset.img){el.innerHTML=`<img src="store/${encodeURI(el.dataset.img)}" alt="">`;return;}fetch('store/'+el.dataset.file).then(r=>r.json()).then(d=>{el.innerHTML=el.dataset.type==='widget'?widgetHtml(d):styleHtml(d);}).catch(()=>{el.textContent='No preview';});});}
 
  function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
- function show(type){list.innerHTML=all.filter(i=>type==='all'||i.Type===type).map(i=>`<div class="item"><div class="pv" data-type="${esc(i.Type)}" data-file="${esc(i.File)}"></div><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h4>${esc(i.Name)}</h4><p>${esc(i.Description)}</p><span class="tag" style="text-transform:none;letter-spacing:0">by ${/^https:\/\/github\.com\/[A-Za-z0-9-]+$/.test(i.AuthorUrl||'')?`<a href="${esc(i.AuthorUrl)}">${esc(i.Author)}</a>`:esc(i.Author||'someone')}</span><span><a href="store/${encodeURI(i.File)}" download>Download</a> &nbsp;·&nbsp; <a style="color:#ff6961;font-weight:500" href="https://github.com/Realdoy/windotra/issues/new?labels=report&title=${encodeURIComponent('Report '+i.Type+': '+i.Name)}&body=${encodeURIComponent('Item: '+i.Name+'\nFile: docs/store/'+i.File+'\n\nWhat is wrong with it?\n')}">Report</a></span></div>`).join('')||'<p class="sub">Nothing here yet.</p>';previews();}
+ let showAll=false,current='all';
+ function show(type){current=type;const items=all.filter(i=>type==='all'||i.Type===type);list.innerHTML=items.slice(0,showAll?999:6).map(i=>`<div class="item"><div class="pv" data-type="${esc(i.Type)}" data-file="${esc(i.File)}" data-img="${esc((i.Images||[])[0]||'')}" onclick="details(${all.indexOf(i)})" style="cursor:pointer"></div><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h4>${esc(i.Name)}</h4><p>${esc(i.Description)}</p><span class="tag" style="text-transform:none;letter-spacing:0">by ${/^https:\/\/github\.com\/[A-Za-z0-9-]+$/.test(i.AuthorUrl||'')?`<a href="${esc(i.AuthorUrl)}">${esc(i.Author)}</a>`:esc(i.Author||'someone')}</span><span><a href="#" onclick="details(${all.indexOf(i)});return false">Details</a> &nbsp;·&nbsp; <a href="store/${encodeURI(i.File)}" download>Download</a> &nbsp;·&nbsp; <a style="color:#ff6961;font-weight:500" href="https://github.com/Realdoy/windotra/issues/new?labels=report&title=${encodeURIComponent('Report '+i.Type+': '+i.Name)}&body=${encodeURIComponent('Item: '+i.Name+'\nFile: docs/store/'+i.File+'\n\nWhat is wrong with it?\n')}">Report</a></span></div>`).join('')||'<p class="sub">Nothing here yet.</p>';const more=document.getElementById('more');more.style.display=items.length>6?'block':'none';more.textContent=showAll?'Show fewer':'View more ('+items.length+')';previews();}
  fetch('store/index.json').then(r=>r.json()).then(d=>{all=d.Items||[];show('all');}).catch(()=>{list.innerHTML='<p class="sub">The store catalog could not be loaded.</p>';});
  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');show(b.dataset.type);});
 </script>

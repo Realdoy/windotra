@@ -5,6 +5,7 @@
    "Name": "TEST",
    "Author": "Realdoy",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "uwu this is a first test widget",
    "File": "widgets/TEST.windotra-widget"
   },
@@ -13,6 +14,7 @@
    "Name": "Claude Usage",
    "Author": "Realdoy",
    "AuthorUrl": "https://github.com/Realdoy",
+   "Images": [],
    "Description": "Your Claude Code tokens today and this week, read from Claude Code's own logs on your PC.",
    "File": "widgets/claude-usage.windotra-widget"
   },
@@ -21,6 +23,7 @@
    "Name": "Greeting",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "A friendly hello with the time and date.",
    "File": "widgets/greeting.windotra-widget"
   },
@@ -29,6 +32,7 @@
    "Name": "My widget",
    "Author": "",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "test",
    "File": "widgets/my-widget.windotra-widget"
   },
@@ -37,6 +41,7 @@
    "Name": "New Year Countdown",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Counts down to midnight on New Year's Eve.",
    "File": "widgets/new-year-countdown.windotra-widget"
   },
@@ -45,6 +50,7 @@
    "Name": "Now Playing Text",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Just the song and artist, big and simple.",
    "File": "widgets/now-playing-text.windotra-widget"
   },
@@ -53,7 +59,8 @@
    "Name": "System Line",
    "Author": "WinDotra",
    "AuthorUrl": "",
-   "Description": "CPU, memory, and power in one quiet tile.",
+   "Images": [],
+   "Description": "CPU and memory as bars with percentages, plus your battery.",
    "File": "widgets/system-line.windotra-widget"
   },
   {
@@ -61,6 +68,7 @@
    "Name": "World Clock",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Your time in 12-hour and 24-hour, plus the day.",
    "File": "widgets/world-clock.windotra-widget"
   },
@@ -69,6 +77,7 @@
    "Name": "Apple Dark",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "macOS in dark mode: midnight hills, dark menu bar and Dock, graphite widgets.",
    "File": "styles/apple-dark.windotra-style"
   },
@@ -77,6 +86,7 @@
    "Name": "Apple",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "macOS Sonoma on Windows: pastel hills, menu bar, Dock, notch island, white widgets on the side.",
    "File": "styles/apple.windotra-style"
   },
@@ -85,6 +95,7 @@
    "Name": "Midnight Neon",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Deep black, hot pink, a starfield, a glowing island, and a dark Dock.",
    "File": "styles/midnight-neon.windotra-style"
   },
@@ -93,6 +104,7 @@
    "Name": "Paper",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Warm paper tiles, rust accent, quiet lines, a light Dock, and a soft rounded island.",
    "File": "styles/paper.windotra-style"
   },
@@ -101,6 +113,7 @@
    "Name": "Rainmeter",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Just the big F R I D A Y date on a dark gradient. No tiles, no Dock, a tiny island.",
    "File": "styles/rainmeter.windotra-style"
   },
@@ -109,6 +122,7 @@
    "Name": "Windows 11",
    "Author": "WinDotra",
    "AuthorUrl": "",
+   "Images": [],
    "Description": "Fluent: Mica-dark tiles in a column, rounded island, digital clock, system stats, calm blue gradient.",
    "File": "styles/windows-11.windotra-style"
   }

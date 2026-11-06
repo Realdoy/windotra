@@ -118,7 +118,9 @@ namespace WinCanvas {
    string login;try{login=await Task.Run(()=>Gh(gh,"api user --jq .login"));}catch(Exception){login=null;}
    if(String.IsNullOrEmpty(login)){Process.Start(new ProcessStartInfo("cmd.exe","/k \""+gh+"\" auth login --web --git-protocol https"){UseShellExecute=true});Report("Sign in to GitHub in the window that opened, then click Publish again.");return;}
    // You're the author: your GitHub name and profile link go into the file.
-   var fields=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);fields["Author"]=login;fields["AuthorUrl"]="https://github.com/"+login;json=Pretty(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(fields));
+   List<KeyValuePair<string,byte[]>> pictures;
+   try{FrameworkElement drawn=type=="widget"?RealWidget(CustomWidget.Read(file)):(FrameworkElement)new Border{Width=420,Child=StylePreview(Styles.Read(file))};pictures=PreviewPictures(Slug(name),drawn);}catch(Exception e){Report("Couldn't prepare pictures: "+e.Message);return;}
+   var fields=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);fields["Author"]=login;fields["AuthorUrl"]="https://github.com/"+login;fields["Images"]=pictures.Select(p=>p.Key).ToList();json=Pretty(new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(fields));
    Report("Publishing "+name+" to the Store…");
    try{
     string pr=await Task.Run(()=>{
@@ -127,6 +129,9 @@ namespace WinCanvas {
      string sha=Gh(gh,"api repos/"+StoreRepo+"/git/ref/heads/main --jq .object.sha");string branch="store-"+fileName.Replace('.','-')+"-"+DateTime.Now.ToString("yyyyMMddHHmmss");
      Gh(gh,"api repos/"+repo+"/git/refs -f ref=refs/heads/"+branch+" -f sha="+sha);
      string body=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(new Dictionary<string,object>{{"message","Add "+type+": "+name},{"content",Convert.ToBase64String(Encoding.UTF8.GetBytes(json))},{"branch",branch}});
+     foreach(var picture in pictures){string pPath="docs/store/"+picture.Key;string pSha=null;try{pSha=Gh(gh,"api repos/"+repo+"/contents/"+pPath+"?ref="+branch+" --jq .sha");}catch(Exception){}
+      var pBody=new Dictionary<string,object>{{"message","Add picture for "+name},{"content",Convert.ToBase64String(picture.Value)},{"branch",branch}};if(!String.IsNullOrEmpty(pSha))pBody["sha"]=pSha;
+      Gh(gh,"api -X PUT repos/"+repo+"/contents/"+pPath+" --input -",new System.Web.Script.Serialization.JavaScriptSerializer{MaxJsonLength=int.MaxValue}.Serialize(pBody));}
      string existing=null;try{existing=Gh(gh,"api repos/"+repo+"/contents/docs/store/"+folderName+"/"+Uri.EscapeDataString(fileName)+"?ref="+branch+" --jq .sha");}catch(Exception){}
      if(!String.IsNullOrEmpty(existing)){var withSha=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(body);withSha["sha"]=existing;body=new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(withSha);}
      Gh(gh,"api -X PUT repos/"+repo+"/contents/docs/store/"+folderName+"/"+Uri.EscapeDataString(fileName)+" --input -",body);

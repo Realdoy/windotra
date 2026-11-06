@@ -10,7 +10,7 @@ namespace WinCanvas {
  // It never carries notes, tasks, apps, files, or anything that runs. Files are plain JSON (.windotra-style).
  public class StyleFile {
   public string Format="windotra-style"; public int Version=1;
-  public string Name="",Author="",AuthorUrl="",Description="";
+  public string Name="",Author="",AuthorUrl="",Description=""; public List<string> Images=new List<string>();
   public Dictionary<string,object> Settings=new Dictionary<string,object>();
   [ScriptIgnore] public string Path;
  }
@@ -49,6 +49,7 @@ namespace WinCanvas {
    if(new FileInfo(file).Length>64*1024)throw new InvalidDataException("That style file is too large.");
    var style=new JavaScriptSerializer().Deserialize<StyleFile>(File.ReadAllText(file));
    if(style==null||style.Format!="windotra-style"||style.Version!=1||String.IsNullOrWhiteSpace(style.Name)||style.Name.Length>60||style.Settings==null)throw new InvalidDataException("That isn't a WinDotra style file.");
+   if(style.Images==null)style.Images=new List<string>();Studio.CheckImages(style.Images);
    if(style.Settings.Keys.Any(k=>!Allowed.Contains(k)&&k!="Layout"))throw new InvalidDataException("That style tries to change something styles can't change.");
    object layout;if(style.Settings.TryGetValue("Layout",out layout)&&!Layouts.Contains(Convert.ToString(layout)))throw new InvalidDataException("That style uses an unknown widget layout.");
    return style;

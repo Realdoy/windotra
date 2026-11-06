@@ -23,8 +23,10 @@ jobs:
           files = json.load(open("files.json"))
           out = []
           for f in files:
-              item = {"filename": f["filename"], "status": f["status"], "content": ""}
-              if f["status"] in ("added", "modified"):
+              item = {"filename": f["filename"], "status": f["status"], "size": 0, "content": ""}
+              if f["filename"].startswith("docs/store/previews/"):
+                  item["size"] = int(subprocess.run(["gh", "api", f"repos/{os.environ['REPO']}/contents/{f['filename']}?ref={os.environ['HEAD']}", "--jq", ".size"], capture_output=True, text=True).stdout.strip() or 0)
+              elif f["status"] in ("added", "modified"):
                   raw = subprocess.run(["gh", "api", f"repos/{os.environ['REPO']}/contents/{f['filename']}?ref={os.environ['HEAD']}", "--jq", ".content"], capture_output=True, text=True).stdout
                   try: item["content"] = base64.b64decode(raw).decode("utf-8")
                   except Exception: item["content"] = ""
@@ -49,4 +51,5 @@ jobs:
       - name: Explain
         if: steps.check.outputs.ok != 'true'
         env: { GH_TOKEN: "${{ github.token }}" }
-        run: gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "Thanks! This upload couldn't be added automatically: $(cat result.txt). A maintainer will take a look."
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "Thanks! This upload could not be added automatically ($(cat result.txt)). A maintainer will take a look."

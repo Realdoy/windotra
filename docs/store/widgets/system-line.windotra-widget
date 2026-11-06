@@ -3,39 +3,71 @@
  "Version": 1,
  "Name": "System Line",
  "Author": "WinDotra",
- "Description": "CPU, memory, and power in one quiet tile.",
+ "Description": "CPU and memory as bars with percentages, plus your battery.",
  "Background": "#1C1C1E",
  "Accent": "",
  "Link": "",
  "Width": 1,
  "Lines": [
   {
+   "Kind": "text",
    "Text": "System",
    "Size": 15,
    "Weight": "SemiBold",
    "Color": "#30D158",
-   "Align": "Left"
+   "Align": "Left",
+   "Bar": "day",
+   "ShowValue": false
   },
   {
-   "Text": "CPU {cpu}",
-   "Size": 14,
+   "Kind": "text",
+   "Text": "CPU",
+   "Size": 12,
    "Weight": "Normal",
-   "Color": "",
-   "Align": "Left"
+   "Color": "#A1A1A6",
+   "Align": "Left",
+   "Bar": "day",
+   "ShowValue": false
   },
   {
-   "Text": "Memory {ram}",
-   "Size": 14,
+   "Kind": "bar",
+   "Text": "",
+   "Size": 6,
    "Weight": "Normal",
-   "Color": "",
-   "Align": "Left"
+   "Color": "#30D158",
+   "Align": "Left",
+   "Bar": "cpu",
+   "ShowValue": true
   },
   {
+   "Kind": "text",
+   "Text": "Memory",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#A1A1A6",
+   "Align": "Left",
+   "Bar": "day",
+   "ShowValue": false
+  },
+  {
+   "Kind": "bar",
+   "Text": "",
+   "Size": 6,
+   "Weight": "Normal",
+   "Color": "#0A84FF",
+   "Align": "Left",
+   "Bar": "ram",
+   "ShowValue": true
+  },
+  {
+   "Kind": "text",
    "Text": "{battery}",
    "Size": 12,
    "Weight": "Normal",
-   "Color": "#99FFFFFF",
-   "Align": "Left"
+   "Color": "#A1A1A6",
+   "Align": "Left",
+   "Bar": "day",
+   "ShowValue": false
   }
  ]
 }
