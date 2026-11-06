@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,7 +38,6 @@ namespace WinCanvas {
   }
   FrameworkElement WidgetPreview(CustomWidget w){var pal=new Palette(w.Background.Length==7?w.Background:w.Background.Length==9?"#"+w.Background.Substring(3):Profile.Background,Profile.Accent);var live=new Func<string,string>(k=>k=="cpu"?"23%":k=="ram"?"48%":k=="battery"?"AC power":k=="song"?"Glass Horizon":k=="artist"?"Sample artist":null);
    var inner=OverlayManager.RenderCustom(w,pal,live,null,w.Width==2?300:140,110);return new Border{Background=Brush(pal.Back),CornerRadius=new CornerRadius(18),Padding=new Thickness(14),HorizontalAlignment=HorizontalAlignment.Left,Child=inner,Effect=new System.Windows.Media.Effects.DropShadowEffect{BlurRadius=16,ShadowDepth=2,Opacity=0.3}};}
-  string widgetDraft;CustomWidget editing;
   void StorePage() {
    Header("Store","Styles and widgets made by the WinDotra community. Everything here is plain settings and text, never programs, so it's safe to install.");LoadOnline();
    var catalog=Catalog();
@@ -63,33 +62,13 @@ namespace WinCanvas {
     var name=new StackPanel{VerticalAlignment=VerticalAlignment.Center};name.Children.Add(new TextBlock{Text=w.Name,FontWeight=FontWeights.SemiBold});name.Children.Add(new TextBlock{Text=(w.Description.Length>0?w.Description:"Custom widget")+(w.Author.Length>0?"  Â·  by "+w.Author:""),FontSize=11.5,Foreground=Brush(Ui.Faint),TextTrimming=TextTrimming.CharacterEllipsis});row.Children.Add(name);
     var tools=new StackPanel{Orientation=Orientation.Horizontal};Grid.SetColumn(tools,1);bool on=Profile.CustomWidgets.Contains(w.Id);
     tools.Children.Add(Chip(on?"On desktop":"Off",on,()=>{if(on)Profile.CustomWidgets.Remove(w.Id);else Profile.CustomWidgets.Add(w.Id);RefreshDesktop();Page(current);}));
-    tools.Children.Add(Ghost("Edit",()=>{editing=w;widgetDraft=null;Page(current);}));
+    tools.Children.Add(Ghost("Edit",()=>EditWidget(w)));tools.Children.Add(Ghost("Publish…",()=>Publish(w.Path,"widget",w.Name)));
     tools.Children.Add(Ghost("Exportâ€¦",()=>{var d=new Microsoft.Win32.SaveFileDialog{Filter="WinDotra widget|*"+CustomWidget.Extension,FileName=Safe(w.Name)+CustomWidget.Extension};if(d.ShowDialog(this)==true){w.Save(d.FileName);Report("Exported. Share the file, or add it to the store (see Share below).");}}));
     tools.Children.Add(Ghost("Delete",()=>{Profile.CustomWidgets.Remove(w.Id);Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(w.Path,Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);RefreshDesktop();Page(current);}));
     row.Children.Add(tools);yours.Children.Add(row);}
    var importRow=new WrapPanel();importRow.Children.Add(Button("Import a widget or styleâ€¦",()=>{var d=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra files|*"+CustomWidget.Extension+";*"+Styles.Extension};if(d.ShowDialog(this)!=true)return;Install(new StoreItem{Type=d.FileName.EndsWith(Styles.Extension)?"style":"widget",Name=Path.GetFileNameWithoutExtension(d.FileName),File=Path.GetFileName(d.FileName),Base=Path.GetDirectoryName(d.FileName)});}));yours.Children.Add(importRow);
-   // The widget maker.
-   var make=Card(editing!=null?"Edit â€œ"+editing.Name+"â€":"Make a widget","One line per row. Start a row with â€œ# â€ for big text, â€œ## â€ for a heading, â€œ> â€ for small grey text. Live values: {time} {time:h:mm tt} {date} {date:dddd} {day} {greeting} {cpu} {ram} {battery} {song} {artist} {days-until:2026-12-24} {countdown:2026-12-31 23:59}.");
-   var w2=editing??new CustomWidget{Name="My widget",Lines=CustomWidget.FromText("## {greeting}\n# {time}\n> {date:dddd, d MMMM}")};
-   var nameBox=new TextBox{Text=w2.Name,MaxLength=40,Margin=new Thickness(0,4,0,6)};var descBox=new TextBox{Text=w2.Description,MaxLength=200,Margin=new Thickness(0,0,0,6)};var authorBox=new TextBox{Text=w2.Author,MaxLength=40,Margin=new Thickness(0,0,0,6)};
-   var textBox=new TextBox{Text=widgetDraft??CustomWidget.ToText(w2.Lines),AcceptsReturn=true,Height=110,FontFamily=new FontFamily("Cascadia Mono, Consolas"),Margin=new Thickness(0,0,0,6),VerticalScrollBarVisibility=ScrollBarVisibility.Auto};
-   var linkBox=new TextBox{Text=w2.Link,MaxLength=1000,Margin=new Thickness(0,0,0,6),ToolTip="Optional: a web address that opens when you click the widget"};
-   var editor=new Grid();editor.ColumnDefinitions.Add(new ColumnDefinition());editor.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
-   var fields=new StackPanel{Margin=new Thickness(0,0,20,0)};foreach(var pair in new object[][]{new object[]{"Name",nameBox},new object[]{"Rows",textBox},new object[]{"Link (optional)",linkBox},new object[]{"Description",descBox},new object[]{"Your name (optional)",authorBox}}){fields.Children.Add(Text((string)pair[0],12,Ui.Faint));fields.Children.Add((UIElement)pair[1]);}
-   editor.Children.Add(fields);var preview=new Border{Margin=new Thickness(0,18,0,0)};Grid.SetColumn(preview,1);editor.Children.Add(preview);make.Children.Add(editor);
-   bool wide=w2.Width==2;string background=w2.Background;
-   Func<CustomWidget> build=()=>new CustomWidget{Name=String.IsNullOrWhiteSpace(nameBox.Text)?"My widget":nameBox.Text.Trim(),Description=descBox.Text.Trim(),Author=authorBox.Text.Trim(),Link=linkBox.Text.Trim(),Width=wide?2:1,Background=background,Lines=CustomWidget.FromText(textBox.Text)};
-   Action refresh=()=>{try{preview.Child=WidgetPreview(build());}catch(Exception){}};refresh();
-   textBox.TextChanged+=(s,e)=>{widgetDraft=textBox.Text;refresh();};nameBox.TextChanged+=(s,e)=>refresh();
-   var options=new WrapPanel();options.Children.Add(Chip(wide?"Medium (wide)":"Small",true,()=>{}));
-   ((Button)options.Children[0]).Click+=(s,e)=>{wide=!wide;((Button)options.Children[0]).Content=wide?"Medium (wide)":"Small";refresh();};
-   foreach(var c in new[]{new[]{"Your theme",""},new[]{"Graphite","#1C1C1E"},new[]{"White","#FFFFFF"},new[]{"Blue","#0A84FF"},new[]{"Orange","#FF9F0A"},new[]{"Green","#1F7A4D"},new[]{"Purple","#5E3A9E"}}){string hex=c[1];var chip=Chip(c[0],false,()=>{});chip.Click+=(s,e)=>{background=hex;refresh();};options.Children.Add(chip);}
-   make.Children.Add(options);
-   var actions=new WrapPanel{Margin=new Thickness(0,6,0,0)};
-   actions.Children.Add(Primary(editing!=null?"Save changes":"Save and put on desktop",()=>{var w=build();w.Validate();Directory.CreateDirectory(CustomWidget.Folder(folder));if(editing!=null&&editing.Path!=null&&File.Exists(editing.Path)){Profile.CustomWidgets.Remove(editing.Id);File.Delete(editing.Path);}w.Save(Path.Combine(CustomWidget.Folder(folder),Safe(w.Name)+CustomWidget.Extension));if(!Profile.CustomWidgets.Contains(w.Id))Profile.CustomWidgets.Add(w.Id);editing=null;widgetDraft=null;Save();Overlays.Profile=Profile;Overlays.Start();Page(current);Report(w.Name+" is on your desktop. Move it with Edit widgets.");}));
-   if(editing!=null)actions.Children.Add(Ghost("Cancel",()=>{editing=null;widgetDraft=null;Page(current);}));
-   make.Children.Add(actions);
-   var share=Card("Share yours","Export a widget or style, then add it to the community store with a pull request on GitHub (put the file in docs/store and add a line to docs/store/index.json). Once it's merged, everyone sees it here.");
+   WidgetMaker();
+   var share=Card("Share yours","Click Publish… on any of your widgets (or Publish to Store on a style in Styles). WinDotra sends it to the community store on GitHub for you. With the GitHub app (gh) signed in it's fully automatic; otherwise GitHub opens with your file filled in. Once it's accepted, everyone sees it here.");
    share.Children.Add(Button("Open the store website â†—",()=>System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(StoreUrl.Replace("store/","")){UseShellExecute=true})));
   }
  }

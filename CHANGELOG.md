@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 0.16 — Visual widget maker and one-click publishing
+
+- Widget maker: rows you click instead of codes. Text rows with sizes (Huge to Small), bold, alignment, 11 colors, and a + Live value menu; progress bars for CPU, memory, battery, or how far through the day/week/month/year; empty space; any background color; accent color; reorder and remove rows; live preview.
+- Publish to Store: one click on a widget (Store) or a style (Styles). With the GitHub app signed in, WinDotra forks, uploads, and opens the pull request for you; otherwise GitHub opens with the file filled in.
+- The store catalog (docs/store/index.json) now rebuilds itself on GitHub, so sharing only needs the file.
+
 ## 0.15 — Fixes and quick switches
 
 - Fixed: your own and downloaded widgets didn't appear on the desktop.
@@ -151,6 +157,7 @@
 ## 0.1 Ã¢â‚¬â€ Appearance
 
 - Wallpaper palettes, app/system themes, transparency, and one-step undo.
+
 
 
 

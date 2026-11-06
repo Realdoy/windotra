@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
@@ -21,16 +21,16 @@ namespace WinCanvas {
   readonly DispatcherTimer animate=new DispatcherTimer{Interval=TimeSpan.FromMilliseconds(33)};
   System.Windows.Forms.NotifyIcon tray; GlobalShortcut shortcut,panic; bool trayHinted,quitting,launched;
   public void Quit(){quitting=true;Close();}
-  public const string AppVersion="0.15";
+  public const string AppVersion="0.16";
   static string updateTag,updateUrl;
   // Asks GitHub for the newest release once per start; if it's newer, says so in the tray, the status bar, and on Home.
   async void CheckForUpdate(){try{using(var http=new System.Net.Http.HttpClient{Timeout=TimeSpan.FromSeconds(8)}){http.DefaultRequestHeaders.UserAgent.ParseAdd("WinDotra/"+AppVersion);var json=await http.GetStringAsync("https://api.github.com/repos/Realdoy/windotra/releases/latest");var data=new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<Dictionary<string,object>>(json);string tag=Convert.ToString(data["tag_name"]).TrimStart('v');Version latest,mine;
-    if(Version.TryParse(tag,out latest)&&Version.TryParse(AppVersion,out mine)&&latest>mine){updateTag=tag;updateUrl=Convert.ToString(data["html_url"]);Report("WinDotra "+tag+" is out. Download it from Home.");if(tray!=null)tray.ShowBalloonTip(4000,"WinDotra "+tag+" is available","Open WinDotra → Home to download the update.",System.Windows.Forms.ToolTipIcon.Info);if(current=="Home")Page("Home");}}}catch(Exception){}}
+    if(Version.TryParse(tag,out latest)&&Version.TryParse(AppVersion,out mine)&&latest>mine){updateTag=tag;updateUrl=Convert.ToString(data["html_url"]);Report("WinDotra "+tag+" is out. Download it from Home.");if(tray!=null)tray.ShowBalloonTip(4000,"WinDotra "+tag+" is available","Open WinDotra â†’ Home to download the update.",System.Windows.Forms.ToolTipIcon.Info);if(current=="Home")Page("Home");}}}catch(Exception){}}
   readonly WrapPanel quick=new WrapPanel{Margin=new Thickness(56,14,40,0)};
   // One-click switches for the big pieces, always at the top.
   void QuickBar(){
    quick.Children.Clear();bool on=Overlays!=null&&Overlays.Active;
-   Func<string,bool,Action,Button> pill=(label,active,action)=>{var b=new Button{Content=(active?"● ":"○ ")+label,FontSize=12,Padding=new Thickness(12,5,12,5),Margin=new Thickness(0,0,8,0),Background=Brush(active?"#1F0A84FF":Ui.Surface),Foreground=Brush(active?"#64B5FF":Ui.Soft),ToolTip=active?"On: click to turn off":"Off: click to turn on"};b.Click+=(s,e)=>Safe(action);return b;};
+   Func<string,bool,Action,Button> pill=(label,active,action)=>{var b=new Button{Content=(active?"â— ":"â—‹ ")+label,FontSize=12,Padding=new Thickness(12,5,12,5),Margin=new Thickness(0,0,8,0),Background=Brush(active?"#1F0A84FF":Ui.Surface),Foreground=Brush(active?"#64B5FF":Ui.Soft),ToolTip=active?"On: click to turn off":"Off: click to turn on"};b.Click+=(s,e)=>Safe(action);return b;};
    quick.Children.Add(pill("Desktop",on,()=>{if(Overlays.Active){Overlays.Stop();Report("Widgets, island, menu bar, and Dock are off.");}else Launch();}));
    quick.Children.Add(pill("Live wallpaper",Overlays.WallpaperRunning,()=>{Profile.LiveWallpaper=!Overlays.WallpaperRunning;Save();ToggleWallpaper();}));
    quick.Children.Add(pill("Menu bar",Profile.MenuBar,()=>{Profile.MenuBar=!Profile.MenuBar;RefreshDesktop();}));
@@ -46,7 +46,7 @@ namespace WinCanvas {
   static void SetStartup(bool on){using(var key=Microsoft.Win32.Registry.CurrentUser.CreateSubKey(RunKey)){key.DeleteValue("WinCanvas",false);if(on)key.SetValue("WinDotra","\""+System.Reflection.Assembly.GetExecutingAssembly().Location+"\" --background");else key.DeleteValue("WinDotra",false);}}
   readonly List<System.Windows.Input.Cursor> previews=new List<System.Windows.Input.Cursor>();
   string current="Home"; bool smoke; Action changed;
-  static readonly string[][] Pages={new[]{"Home","","Status and shortcuts"},new[]{"Styles","","Complete looks in one click, share your own"},new[]{"AI","","Ask anything, no API keys"},new[]{"Island","","Dynamic Island, buttons, quick launch"},new[]{"Menu bar & Dock","\uE8A1","Menu bar across the top, Dock at the bottom"},new[]{"Widgets","","Clock, system, notes, focus, calendar, island"},new[]{"Live wallpaper","","Calm animated scenes behind your icons"},new[]{"Typography","","Widget and classic Windows fonts"},new[]{"Cursors","","Static and animated pointers"},new[]{"Store","","Download styles and widgets, share your own"}};
+  static readonly string[][] Pages={new[]{"Home","î ","Status and shortcuts"},new[]{"Styles","î±","Complete looks in one click, share your own"},new[]{"AI","î¦š","Ask anything, no API keys"},new[]{"Island","îŸ´","Dynamic Island, buttons, quick launch"},new[]{"Menu bar & Dock","\uE8A1","Menu bar across the top, Dock at the bottom"},new[]{"Widgets","î¢©","Clock, system, notes, focus, calendar, island"},new[]{"Live wallpaper","î¤›","Calm animated scenes behind your icons"},new[]{"Typography","î£’","Widget and classic Windows fonts"},new[]{"Cursors","î¥¢","Static and animated pointers"},new[]{"Store","îœ™","Download styles and widgets, share your own"}};
   // One-click widget looks: name, accent, background.
   static readonly string[][] Themes={new[]{"Paper","#4F46E5","#FFFFFF"},new[]{"Stone","#57534E","#F5F5F4"},new[]{"Sage","#4D7C5A","#F3F6F1"},new[]{"Sky","#2563EB","#F2F7FB"},new[]{"Blush","#BE185D","#FBF4F4"},new[]{"Ink","#A5B4FC","#18181B"},new[]{"Night","#F5F5F4","#0C0A09"},new[]{"Midnight","#60A5FA","#111827"}};
   static SolidColorBrush Brush(string value) { return Ui.Brush(value); }
@@ -58,7 +58,7 @@ namespace WinCanvas {
    if(File.Exists(ProfilePath)) {try {Profile=JsonFile.Read<DesktopProfile>(ProfilePath); if(Profile==null)throw new InvalidDataException("Empty profile");Profile.Validate();}catch(Exception e){Profile=new DesktopProfile();warning="Saved profile could not load: "+e.Message+" Original file retained until you save.";}}
    customization=new CustomizationService(new NativeCustomization(),folder);
    SetupAi();
-   Overlays=new OverlayManager(Profile,Save,Report){DesktopAttach=!smoke,Demo=smoke};Overlays.Chat=chat;Overlays.ConfigureAi=OpenAiSetup;Overlays.ConfigureIsland=()=>{Show();Activate();Page("Island");};Overlays.DataFolder=folder;Overlays.WidgetsFolder=folder;Overlays.SwitchAppearance=dark=>Safe(()=>AppleAppearance(dark));Overlays.GoBackToWindows=()=>Safe(BackToWindows);Overlays.ShowStudio=()=>{Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();};Overlays.ChangeEngine=engine=>Safe(()=>{SaveAi(c=>c.Provider=engine);if(current=="AI")Page(current);});Overlays.EditingChanged=on=>Report(on?"Edit mode: drag widgets, resize with the blue corner, use − to remove and ⋯ for size and color. Click Done when finished.":"Widgets locked in place.");
+   Overlays=new OverlayManager(Profile,Save,Report){DesktopAttach=!smoke,Demo=smoke};Overlays.Chat=chat;Overlays.ConfigureAi=OpenAiSetup;Overlays.ConfigureIsland=()=>{Show();Activate();Page("Island");};Overlays.DataFolder=folder;Overlays.WidgetsFolder=folder;Overlays.SwitchAppearance=dark=>Safe(()=>AppleAppearance(dark));Overlays.GoBackToWindows=()=>Safe(BackToWindows);Overlays.ShowStudio=()=>{Show();if(WindowState==WindowState.Minimized)WindowState=WindowState.Normal;Activate();};Overlays.ChangeEngine=engine=>Safe(()=>{SaveAi(c=>c.Provider=engine);if(current=="AI")Page(current);});Overlays.EditingChanged=on=>Report(on?"Edit mode: drag widgets, resize with the blue corner, use âˆ’ to remove and â‹¯ for size and color. Click Done when finished.":"Widgets locked in place.");
    if(!smoke){shortcut=new GlobalShortcut(this,()=>Overlays.OpenAssistant(),Report);panic=new GlobalShortcut(this,()=>Safe(BackToWindows),Report,7711,0x4007,0x57,"Ctrl+Alt+Shift+W");}
    var root=new Grid();root.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(232)});root.ColumnDefinitions.Add(new ColumnDefinition());
    root.Children.Add(Sidebar());
@@ -102,7 +102,7 @@ namespace WinCanvas {
    var list=new StackPanel();Grid.SetRow(list,1);
    for(int i=0;i<Pages.Length;i++){string page=Pages[i][0];var item=NavItem(Pages[i][1],page,"Ctrl+"+(i+1));item.Click+=(s,e)=>Safe(()=>Page(page));nav[page]=item;list.Children.Add(item);}
    list.Children.Add(new Border{Height=1,Background=Brush(Ui.Line),Margin=new Thickness(10,14,10,14)});
-   var wall=NavItem("","Wallpaper & theme","Static wallpaper, light and dark mode");wall.Click+=(s,e)=>Safe(appearance);list.Children.Add(wall);side.Children.Add(list);
+   var wall=NavItem("îž","Wallpaper & theme","Static wallpaper, light and dark mode");wall.Click+=(s,e)=>Safe(appearance);list.Children.Add(wall);side.Children.Add(list);
    var foot=new StackPanel{Margin=new Thickness(10,0,0,0)};Grid.SetRow(foot,3);var line=new StackPanel{Orientation=Orientation.Horizontal};line.Children.Add(runningDot);running.FontSize=12;running.Foreground=Brush(Ui.Soft);running.TextWrapping=TextWrapping.Wrap;running.MaxWidth=170;line.Children.Add(running);foot.Children.Add(line);
    var actions=new StackPanel{Orientation=Orientation.Horizontal,Margin=new Thickness(-12,6,0,0)};
    var hide=Ghost("To tray",()=>{if(tray!=null){Hide();if(!trayHinted){trayHinted=true;tray.ShowBalloonTip(2500,"WinDotra is still running","Double-click the tray icon to come back.",System.Windows.Forms.ToolTipIcon.Info);}}});hide.ToolTip="Hide this window; everything keeps running";actions.Children.Add(hide);
@@ -120,8 +120,8 @@ namespace WinCanvas {
     var b=new Button{Content=face,Width=13,Height=13,Margin=new Thickness(0,0,8,0),Padding=new Thickness(0),Background=Brushes.Transparent,BorderThickness=new Thickness(0),Cursor=System.Windows.Input.Cursors.Arrow,Focusable=false};
     var template=new ControlTemplate(typeof(Button));template.VisualTree=new FrameworkElementFactory(typeof(ContentPresenter));b.Template=template;
     System.Windows.Shell.WindowChrome.SetIsHitTestVisibleInChrome(b,true);b.Click+=(s,e)=>action();return b;};
-   row.Children.Add(light("#FF5F57","#E0443E","×",()=>Close()));
-   row.Children.Add(light("#FEBC2E","#DEA123","−",()=>WindowState=WindowState.Minimized));
+   row.Children.Add(light("#FF5F57","#E0443E","Ã—",()=>Close()));
+   row.Children.Add(light("#FEBC2E","#DEA123","âˆ’",()=>WindowState=WindowState.Minimized));
    row.Children.Add(light("#28C840","#1AAB29","+",()=>WindowState=WindowState==WindowState.Maximized?WindowState.Normal:WindowState.Maximized));
    row.MouseEnter+=(s,e)=>{foreach(var m in marks)m.Opacity=1;};row.MouseLeave+=(s,e)=>{foreach(var m in marks)m.Opacity=0;};
    return row;
@@ -130,7 +130,7 @@ namespace WinCanvas {
    var bar=new Border{BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(0,1,0,0),Padding=new Thickness(56,12,40,14)};Grid.SetRow(bar,2);
    var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition());grid.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
    status.TextWrapping=TextWrapping.Wrap;status.Foreground=Brush(Ui.Soft);status.FontSize=13;status.VerticalAlignment=VerticalAlignment.Center;grid.Children.Add(status);
-   var keys=new TextBlock{Text="Ctrl+1–0 pages  ·  Ctrl+L launch  ·  Ctrl+Alt+Space AI",FontSize=11,Foreground=Brush(Ui.Faint),VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(16,0,0,0)};Grid.SetColumn(keys,1);grid.Children.Add(keys);
+   var keys=new TextBlock{Text="Ctrl+1â€“0 pages  Â·  Ctrl+L launch  Â·  Ctrl+Alt+Space AI",FontSize=11,Foreground=Brush(Ui.Faint),VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(16,0,0,0)};Grid.SetColumn(keys,1);grid.Children.Add(keys);
    bar.Child=grid;return bar;
   }
   static readonly Dictionary<string,string> TileColors=new Dictionary<string,string>{{"Home","#0A84FF"},{"Styles","#FF375F"},{"AI","#BF5AF2"},{"Island","#3A3A3C"},{"Menu bar & Dock","#5E5CE6"},{"Widgets","#FF9F0A"},{"Live wallpaper","#32ADE6"},{"Typography","#FF453A"},{"Cursors","#30D158"},{"Store","#0A84FF"},{"Profiles","#8E8E93"},{"Wallpaper & theme","#64D2FF"}};
@@ -213,7 +213,7 @@ namespace WinCanvas {
   Grid DesktopPreview(double height,bool widgets) {
    var preview=new Grid{Height=height,ClipToBounds=true};preview.Children.Add(new WallpaperScene(SceneOptions.From(Profile)));if(!widgets)return preview;
    var pv=new Palette(Profile.Background,Profile.Accent);var font=FontLibrary.For(Profile.Font);var edge=Brush(pv.Line);
-   var pill=new TextBlock{Text=DateTime.Now.ToString(Profile.Clock24?"HH:mm":"h:mm tt")+"   ·   "+DateTime.Now.ToString("ddd d MMM")+"   ·   Ask AI",FontFamily=font,FontSize=11.5,Foreground=Brush("#F4F4F5"),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};
+   var pill=new TextBlock{Text=DateTime.Now.ToString(Profile.Clock24?"HH:mm":"h:mm tt")+"   Â·   "+DateTime.Now.ToString("ddd d MMM")+"   Â·   Ask AI",FontFamily=font,FontSize=11.5,Foreground=Brush("#F4F4F5"),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center};
    preview.Children.Add(new Border{Width=Math.Min(Profile.IslandWidth*0.72,360),Height=38,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(0,14,0,0),CornerRadius=new CornerRadius(19),Background=Brush("#000000"),Child=pill,Effect=new System.Windows.Media.Effects.DropShadowEffect{BlurRadius=16,ShadowDepth=2,Opacity=0.2}});
    var tile=new StackPanel{Margin=new Thickness(16,10,16,12)};tile.Children.Add(new TextBlock{Text="Clock",FontSize=9.5,Foreground=Brush(pv.Soft),FontFamily=font});
    tile.Children.Add(new TextBlock{Text=DateTime.Now.ToString(Profile.Clock24?"HH:mm":"h:mm"),FontSize=Math.Min(Profile.FontSize*2.4,40),FontWeight=FontWeights.Light,Foreground=Brush(pv.Ink),FontFamily=font});tile.Children.Add(new TextBlock{Text=DateTime.Now.ToString("dddd, d MMMM"),FontSize=Math.Min(Profile.FontSize*0.8,15),Foreground=Brush(pv.Soft),FontFamily=font});
@@ -232,7 +232,7 @@ namespace WinCanvas {
    string face=null;try{face=new NativeCustomization().ReadFonts().Menu.Face;}catch(Exception){}
    if(face==null||FontLibrary.HasLetters(face))return;
    var row=new Grid();row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
-   var text=Text("Your Windows menu font is “"+face+"”, an icon font with no letters, so menus in Windows and apps show boxes.",13,"#FFD60A");text.VerticalAlignment=VerticalAlignment.Center;text.Margin=new Thickness(0,0,12,0);row.Children.Add(text);
+   var text=Text("Your Windows menu font is â€œ"+face+"â€, an icon font with no letters, so menus in Windows and apps show boxes.",13,"#FFD60A");text.VerticalAlignment=VerticalAlignment.Center;text.Margin=new Thickness(0,0,12,0);row.Children.Add(text);
    var fix=Primary(customization.FontUndo?"Fix: restore previous fonts":"Fix: use Segoe UI",()=>{if(customization.FontUndo)customization.UndoFonts();else customization.ApplyFonts("Segoe UI",9);Report("Windows menu fonts fixed. Reopen apps to see the change.");Page(current);});fix.Margin=new Thickness(0);Grid.SetColumn(fix,1);row.Children.Add(fix);
    body.Children.Add(new Border{Background=Brush("#3A2E0A"),BorderBrush=Brush("#7A5F10"),BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(12),Padding=new Thickness(16,12,16,12),Margin=new Thickness(0,0,0,20),Child=row});
   }
@@ -252,7 +252,7 @@ namespace WinCanvas {
    var actions=new WrapPanel{Margin=new Thickness(0,0,0,12)};actions.Children.Add(Primary("Launch desktop",Launch));actions.Children.Add(Button(Overlays.WallpaperRunning?"Stop live wallpaper":"Start live wallpaper",()=>{ToggleWallpaper();Page(current);}));actions.Children.Add(Button("Ask AI",()=>Overlays.OpenAssistant()));body.Children.Add(actions);
    var list=Card("Everything in WinDotra","");
    foreach(var page in Pages.Skip(1)){string target=page[0];list.Children.Add(Row(page[1],target,page[2],()=>Page(target)));}
-   list.Children.Add(Row("","Wallpaper & theme","Static wallpaper, light and dark mode, transparency",appearance));
+   list.Children.Add(Row("îž","Wallpaper & theme","Static wallpaper, light and dark mode, transparency",appearance));
    list.Children.Add(Text(widgets+" of 5 widgets on"+(Profile.Island?", island on":"")+". Nothing runs at startup unless you start it.",12,Ui.Faint));
    body.Children.Add(Button("Run setup again",StartSetup));
    var always=Card("Always there","Closing this window keeps your island, widgets, and live wallpaper running. Quit from the tray icon (right-click it).");
@@ -262,7 +262,7 @@ namespace WinCanvas {
    var grid=new Grid();grid.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(40)});grid.ColumnDefinitions.Add(new ColumnDefinition());grid.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
    grid.Children.Add(IconTile(glyph,title,26));
    var text=new StackPanel();text.Children.Add(new TextBlock{Text=title,FontSize=14,FontWeight=FontWeights.SemiBold});text.Children.Add(new TextBlock{Text=description,FontSize=12,Foreground=Brush(Ui.Soft),Margin=new Thickness(0,2,0,0)});Grid.SetColumn(text,1);grid.Children.Add(text);
-   var arrow=new TextBlock{Text="",FontFamily=new FontFamily(Ui.Icons),FontSize=11,Foreground=Brush(Ui.Faint),VerticalAlignment=VerticalAlignment.Center};Grid.SetColumn(arrow,2);grid.Children.Add(arrow);
+   var arrow=new TextBlock{Text="î¬",FontFamily=new FontFamily(Ui.Icons),FontSize=11,Foreground=Brush(Ui.Faint),VerticalAlignment=VerticalAlignment.Center};Grid.SetColumn(arrow,2);grid.Children.Add(arrow);
    var b=new Button{Content=grid,Style=(Style)Resources["Ghost"],HorizontalContentAlignment=HorizontalAlignment.Stretch,HorizontalAlignment=HorizontalAlignment.Stretch,Padding=new Thickness(10,12,12,12),Margin=new Thickness(-10,0,0,0),Foreground=Brush(Ui.Ink)};b.Click+=(s,e)=>Safe(action);return b;
   }
   void Widgets() {
@@ -272,9 +272,9 @@ namespace WinCanvas {
    var swatches=new WrapPanel();
    foreach(var theme in Themes){string accent=theme[1],background=theme[2];var dots=new StackPanel{Orientation=Orientation.Horizontal};dots.Children.Add(new Border{Width=18,Height=18,CornerRadius=new CornerRadius(9),Background=Brush(background),BorderBrush=Brush("#26000000"),BorderThickness=new Thickness(1),Child=new System.Windows.Shapes.Ellipse{Width=7,Height=7,Fill=Brush(accent)}});dots.Children.Add(new TextBlock{Text=theme[0],Margin=new Thickness(8,0,0,0),VerticalAlignment=VerticalAlignment.Center});
     bool on=Profile.Accent==accent&&Profile.Background==background;var chip=Button("",()=>{Profile.Accent=accent;Profile.Background=background;Page(current);Report("Theme set. Launch to see it on your desktop.");});chip.Content=dots;chip.Padding=new Thickness(10,7,14,7);chip.Margin=new Thickness(0,4,8,4);if(on){chip.BorderBrush=Brush(Ui.Ink);chip.BorderThickness=new Thickness(1.5);}swatches.Children.Add(chip);}
-   themes.Children.Add(swatches);var colors=new WrapPanel{Margin=new Thickness(0,6,0,0)};colors.Children.Add(Swatch("Accent",Profile.Accent,()=>PickColor(true)));colors.Children.Add(Swatch("Background",Profile.Background,()=>PickColor(false)));themes.Children.Add(colors);Check(themes,"Frosted glass  ·  macOS-style blurred cards",Profile.Glass,v=>Profile.Glass=v);
+   themes.Children.Add(swatches);var colors=new WrapPanel{Margin=new Thickness(0,6,0,0)};colors.Children.Add(Swatch("Accent",Profile.Accent,()=>PickColor(true)));colors.Children.Add(Swatch("Background",Profile.Background,()=>PickColor(false)));themes.Children.Add(colors);Check(themes,"Frosted glass  Â·  macOS-style blurred cards",Profile.Glass,v=>Profile.Glass=v);
    var modules=Card("On your desktop","Widgets stay where they are. To move, resize, or recolor them, use Edit widgets (right-click any widget).");
-   Check(modules,"Clock",Profile.Clock,v=>Profile.Clock=v);Check(modules,"System  ·  CPU, memory, power",Profile.Stats,v=>Profile.Stats=v);Check(modules,"Notes  ·  saved automatically",Profile.Note,v=>Profile.Note=v);Check(modules,"Focus timer",Profile.Focus,v=>Profile.Focus=v);Check(modules,"Calendar",Profile.Calendar,v=>Profile.Calendar=v);Check(modules,"Now playing  ·  album art and controls",Profile.Music,v=>Profile.Music=v);Check(modules,"Reminders  ·  shares your island tasks",Profile.Reminders,v=>Profile.Reminders=v);Check(modules,"Big date  ·  F R I D A Y on your desktop, Rainmeter style",Profile.Day,v=>Profile.Day=v);Check(modules,"Island  ·  now playing, downloads, AI, focus, tasks",Profile.Island,v=>Profile.Island=v);
+   Check(modules,"Clock",Profile.Clock,v=>Profile.Clock=v);Check(modules,"System  Â·  CPU, memory, power",Profile.Stats,v=>Profile.Stats=v);Check(modules,"Notes  Â·  saved automatically",Profile.Note,v=>Profile.Note=v);Check(modules,"Focus timer",Profile.Focus,v=>Profile.Focus=v);Check(modules,"Calendar",Profile.Calendar,v=>Profile.Calendar=v);Check(modules,"Now playing  Â·  album art and controls",Profile.Music,v=>Profile.Music=v);Check(modules,"Reminders  Â·  shares your island tasks",Profile.Reminders,v=>Profile.Reminders=v);Check(modules,"Big date  Â·  F R I D A Y on your desktop, Rainmeter style",Profile.Day,v=>Profile.Day=v);Check(modules,"Island  Â·  now playing, downloads, AI, focus, tasks",Profile.Island,v=>Profile.Island=v);
    modules.Children.Add(Text("Island options, buttons, and quick launch are on the Island page.",12,Ui.Faint));
    var style=Card("Shape","Size, corners, and see-through amount.");
    Slider(style,"Opacity",Profile.Opacity,0.35,1,v=>Profile.Opacity=v);Slider(style,"Corner radius",Profile.Radius,0,40,v=>Profile.Radius=v);Slider(style,"Widget size",Profile.WidgetWidth,240,480,v=>Profile.WidgetWidth=v);Slider(style,"Island width",Profile.IslandWidth,340,640,v=>Profile.IslandWidth=v);Slider(style,"Open island width",Profile.IslandExpandedWidth,420,720,v=>Profile.IslandExpandedWidth=v);
@@ -288,23 +288,23 @@ namespace WinCanvas {
    Header("Typography","Any installed font for your widgets, plus the classic Windows menu and title fonts.");
    var widget=Card("Widget font","Used by every widget and the island. Imports need the same font installed.");
    var sample=new TextBlock{Text="The quick brown fox jumps.  0123456789",FontSize=Profile.FontSize*1.6,Foreground=Brush(Ui.Ink),FontFamily=FontLibrary.For(Profile.Font),TextWrapping=TextWrapping.Wrap};
-   var small=new TextBlock{Text="Focus 25:00   ·   CPU 32%   ·   Tuesday, 3 March",FontSize=Profile.FontSize,Foreground=Brush(Ui.Soft),FontFamily=FontLibrary.For(Profile.Font),Margin=new Thickness(0,8,0,0)};
+   var small=new TextBlock{Text="Focus 25:00   Â·   CPU 32%   Â·   Tuesday, 3 March",FontSize=Profile.FontSize,Foreground=Brush(Ui.Soft),FontFamily=FontLibrary.For(Profile.Font),Margin=new Thickness(0,8,0,0)};
    var specimen=new StackPanel{Margin=new Thickness(22,18,22,18)};specimen.Children.Add(sample);specimen.Children.Add(small);widget.Children.Add(new Border{Background=Brush(Ui.Surface),BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(10),Margin=new Thickness(0,4,0,12),Child=specimen});
    widget.Children.Add(Fonts(Profile.Font,f=>{Profile.Font=f;sample.FontFamily=FontLibrary.For(f);small.FontFamily=sample.FontFamily;}));Slider(widget,"Size",Profile.FontSize,11,28,v=>{Profile.FontSize=v;sample.FontSize=v*1.6;small.FontSize=v;});widget.Children.Add(Primary("Save & launch",Launch));
    var more=Card("Add fonts","Install any .ttf, .otf, or .ttc file, or add free fonts with one click. Fonts are installed for your Windows account only (no admin), so other apps can use them too.");
-   more.Children.Add(Primary("Install a font file…",()=>{var dialog=new Microsoft.Win32.OpenFileDialog{Title="Choose font files",Filter="Fonts|*.ttf;*.otf;*.ttc",Multiselect=true};if(dialog.ShowDialog(this)!=true)return;var names=dialog.FileNames.Select(FontLibrary.Install).ToList();Report("Installed "+String.Join(", ",names)+". Pick it in the list above.");Page(current);}));
-   more.Children.Add(Text("Free font pack  ·  Google Fonts, open license",13,Ui.Soft));var pack=new WrapPanel();
-   foreach(var font in FontLibrary.Free){string name=font[0],path=font[1];bool have=FontLibrary.Has(name);var chip=Chip((have?"✓ ":"")+name,false,()=>{});chip.ToolTip=font[2]+(have?" · installed":" · click to download and install");if(have)chip.FontFamily=FontLibrary.For(name);
-    chip.Click+=async(s,e)=>{if(FontLibrary.Has(name)){Profile.Font=name;Save();Page(current);Report(name+" is now your widget font.");return;}chip.Content="Installing "+name+"…";chip.IsEnabled=false;try{string added=await FontLibrary.Download(path);Report(added+" installed. Click it again to use it for your widgets.");Page(current);}catch(Exception ex){chip.Content=name;chip.IsEnabled=true;Report("Couldn't install "+name+": "+ex.Message);}};
+   more.Children.Add(Primary("Install a font fileâ€¦",()=>{var dialog=new Microsoft.Win32.OpenFileDialog{Title="Choose font files",Filter="Fonts|*.ttf;*.otf;*.ttc",Multiselect=true};if(dialog.ShowDialog(this)!=true)return;var names=dialog.FileNames.Select(FontLibrary.Install).ToList();Report("Installed "+String.Join(", ",names)+". Pick it in the list above.");Page(current);}));
+   more.Children.Add(Text("Free font pack  Â·  Google Fonts, open license",13,Ui.Soft));var pack=new WrapPanel();
+   foreach(var font in FontLibrary.Free){string name=font[0],path=font[1];bool have=FontLibrary.Has(name);var chip=Chip((have?"âœ“ ":"")+name,false,()=>{});chip.ToolTip=font[2]+(have?" Â· installed":" Â· click to download and install");if(have)chip.FontFamily=FontLibrary.For(name);
+    chip.Click+=async(s,e)=>{if(FontLibrary.Has(name)){Profile.Font=name;Save();Page(current);Report(name+" is now your widget font.");return;}chip.Content="Installing "+name+"â€¦";chip.IsEnabled=false;try{string added=await FontLibrary.Download(path);Report(added+" installed. Click it again to use it for your widgets.");Page(current);}catch(Exception ex){chip.Content=name;chip.IsEnabled=true;Report("Couldn't install "+name+": "+ex.Message);}};
     pack.Children.Add(chip);}
    more.Children.Add(pack);
    // Windows 11 draws most of its UI with its own fonts, so there are two levels: the classic metrics (title bars,
    // menus) and a system-wide "Segoe UI" substitution that most apps follow after signing out.
    string swapped=SystemFont.Current;
    var system=Card("Windows font","Pick a font, then choose how far it goes. Today: "+(swapped!=null?"Windows apps use "+swapped+".":"Windows apps use Segoe UI (the default)."));
-   string family=swapped??"Segoe UI";int points=10;var classic=new TextBlock{Text="File   Edit   View   Help   ·   The quick brown fox",FontSize=points*96.0/72,Foreground=Brush(Ui.Ink),FontFamily=FontLibrary.For(family),Margin=new Thickness(16,10,16,10)};system.Children.Add(new Border{Background=Brush(Ui.Surface),BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(8),Margin=new Thickness(0,4,0,8),Child=classic});
+   string family=swapped??"Segoe UI";int points=10;var classic=new TextBlock{Text="File   Edit   View   Help   Â·   The quick brown fox",FontSize=points*96.0/72,Foreground=Brush(Ui.Ink),FontFamily=FontLibrary.For(family),Margin=new Thickness(16,10,16,10)};system.Children.Add(new Border{Background=Brush(Ui.Surface),BorderBrush=Brush(Ui.Line),BorderThickness=new Thickness(1),CornerRadius=new CornerRadius(8),Margin=new Thickness(0,4,0,8),Child=classic});
    system.Children.Add(Fonts(family,f=>{family=f;classic.FontFamily=FontLibrary.For(f);}));
-   var whole=Text("Most Windows apps  ·  File Explorer, Notepad, dialogs, most desktop apps",14,Ui.Ink);whole.FontWeight=FontWeights.SemiBold;whole.Margin=new Thickness(0,8,0,2);system.Children.Add(whole);
+   var whole=Text("Most Windows apps  Â·  File Explorer, Notepad, dialogs, most desktop apps",14,Ui.Ink);whole.FontWeight=FontWeights.SemiBold;whole.Margin=new Thickness(0,8,0,2);system.Children.Add(whole);
    system.Children.Add(Text("Needs your administrator approval and a sign-out to show up. A backup is saved first. Start, Settings, and the taskbar on Windows 11 keep their own font.",12,Ui.Soft));
    var wholeActions=new WrapPanel();
    wholeActions.Children.Add(Primary("Use this font in Windows",()=>{
@@ -340,31 +340,31 @@ namespace WinCanvas {
    try{if(File.Exists(WallpaperUndoPath)){RestoreWindowsWallpaper();notes.Add("wallpaper");}}catch(Exception){}
    Profile.Off=true;try{Save();}catch(Exception){}
    if(current!=null)Page(current);
-   Report("Back to normal Windows: "+String.Join(", ",notes)+" restored, WinDotra's desktop is off."+(SystemFont.Current!=null?" Your whole-Windows font is still "+SystemFont.Current+": restore it on the Typography page.":"")+" Your setup is saved as “Before going back to Windows” in Profiles.");
+   Report("Back to normal Windows: "+String.Join(", ",notes)+" restored, WinDotra's desktop is off."+(SystemFont.Current!=null?" Your whole-Windows font is still "+SystemFont.Current+": restore it on the Typography page.":"")+" Your setup is saved as â€œBefore going back to Windowsâ€ in Profiles.");
   }
   void Profiles() {
    Header("Profiles","Save your whole desktop as a file on this PC, switch between saved desktops, and share them.");
    var save=Card("Save this desktop","Saves the look, widgets and where they sit, the island, menu bar, Dock, wallpaper, notes, and tasks. AI settings and chats are never included.");
    var name=new TextBox{Text="My desktop "+DateTime.Now.ToString("yyyy-MM-dd HH.mm"),MaxLength=60,Margin=new Thickness(0,4,0,6)};save.Children.Add(Text("Name",12,Ui.Faint));save.Children.Add(name);
    var actions=new WrapPanel();
-   actions.Children.Add(Primary("Save",()=>{Save();Directory.CreateDirectory(ProfilesFolder);string clean=Safe(String.IsNullOrWhiteSpace(name.Text)?"My desktop":name.Text.Trim());string file=Path.Combine(ProfilesFolder,clean+".json");JsonFile.Save(file,Profile);Page(current);Report("Saved “"+clean+"” on this PC. It's in the list below.");}));
-   actions.Children.Add(Button("Export…",()=>{Profile.Validate();var dialog=new Microsoft.Win32.SaveFileDialog{Filter="WinDotra profile|*.json",FileName=Safe(name.Text.Trim())+".json"};if(dialog.ShowDialog(this)==true){JsonFile.Save(dialog.FileName,Profile);Report("Profile exported. Notes and tasks are included.");}}));
-   actions.Children.Add(Button("Import…",()=>{var dialog=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra profile|*.json"};if(dialog.ShowDialog(this)!=true)return;var imported=LoadProfile(dialog.FileName);Directory.CreateDirectory(ProfilesFolder);File.Copy(dialog.FileName,Path.Combine(ProfilesFolder,Path.GetFileName(dialog.FileName)),true);UseProfile(imported);Report("Imported and switched to "+Path.GetFileNameWithoutExtension(dialog.FileName)+". It's saved in the list below too.");}));
+   actions.Children.Add(Primary("Save",()=>{Save();Directory.CreateDirectory(ProfilesFolder);string clean=Safe(String.IsNullOrWhiteSpace(name.Text)?"My desktop":name.Text.Trim());string file=Path.Combine(ProfilesFolder,clean+".json");JsonFile.Save(file,Profile);Page(current);Report("Saved â€œ"+clean+"â€ on this PC. It's in the list below.");}));
+   actions.Children.Add(Button("Exportâ€¦",()=>{Profile.Validate();var dialog=new Microsoft.Win32.SaveFileDialog{Filter="WinDotra profile|*.json",FileName=Safe(name.Text.Trim())+".json"};if(dialog.ShowDialog(this)==true){JsonFile.Save(dialog.FileName,Profile);Report("Profile exported. Notes and tasks are included.");}}));
+   actions.Children.Add(Button("Importâ€¦",()=>{var dialog=new Microsoft.Win32.OpenFileDialog{Filter="WinDotra profile|*.json"};if(dialog.ShowDialog(this)!=true)return;var imported=LoadProfile(dialog.FileName);Directory.CreateDirectory(ProfilesFolder);File.Copy(dialog.FileName,Path.Combine(ProfilesFolder,Path.GetFileName(dialog.FileName)),true);UseProfile(imported);Report("Imported and switched to "+Path.GetFileNameWithoutExtension(dialog.FileName)+". It's saved in the list below too.");}));
    actions.Children.Add(Ghost("Open profiles folder",()=>{Directory.CreateDirectory(ProfilesFolder);System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ProfilesFolder){UseShellExecute=true});}));
    save.Children.Add(actions);
    var files=Directory.Exists(ProfilesFolder)?new DirectoryInfo(ProfilesFolder).GetFiles("*.json").OrderByDescending(f=>f.LastWriteTime).ToList():new List<FileInfo>();
-   var list=Card("Saved on this PC",files.Count==0?"Nothing saved yet. Click Save above.":files.Count+" saved desktop"+(files.Count==1?"":"s")+"  ·  "+ProfilesFolder);
+   var list=Card("Saved on this PC",files.Count==0?"Nothing saved yet. Click Save above.":files.Count+" saved desktop"+(files.Count==1?"":"s")+"  Â·  "+ProfilesFolder);
    for(int i=0;i<files.Count;i++){
     var file=files[i];if(i>0)Divider(list);
     var row=new Grid{Margin=new Thickness(0,6,0,6)};row.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(40)});row.ColumnDefinitions.Add(new ColumnDefinition());row.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
     row.Children.Add(IconTile("\uE8A5","Profiles",26));
-    string summary;try{var p=JsonFile.Read<DesktopProfile>(file.FullName);summary=p.Scene+" wallpaper  ·  "+p.Font+(p.MenuBar?"  ·  menu bar":"")+(p.Dock?"  ·  Dock":"")+"  ·  "+p.Tasks.Count+" tasks";}catch(Exception){summary="Can't be read";}
-    var text=new StackPanel{VerticalAlignment=VerticalAlignment.Center};text.Children.Add(new TextBlock{Text=Path.GetFileNameWithoutExtension(file.Name),FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis});text.Children.Add(new TextBlock{Text=file.LastWriteTime.ToString("g")+"  ·  "+summary,FontSize=11.5,Foreground=Brush(Ui.Faint),TextTrimming=TextTrimming.CharacterEllipsis});Grid.SetColumn(text,1);row.Children.Add(text);
+    string summary;try{var p=JsonFile.Read<DesktopProfile>(file.FullName);summary=p.Scene+" wallpaper  Â·  "+p.Font+(p.MenuBar?"  Â·  menu bar":"")+(p.Dock?"  Â·  Dock":"")+"  Â·  "+p.Tasks.Count+" tasks";}catch(Exception){summary="Can't be read";}
+    var text=new StackPanel{VerticalAlignment=VerticalAlignment.Center};text.Children.Add(new TextBlock{Text=Path.GetFileNameWithoutExtension(file.Name),FontWeight=FontWeights.SemiBold,TextTrimming=TextTrimming.CharacterEllipsis});text.Children.Add(new TextBlock{Text=file.LastWriteTime.ToString("g")+"  Â·  "+summary,FontSize=11.5,Foreground=Brush(Ui.Faint),TextTrimming=TextTrimming.CharacterEllipsis});Grid.SetColumn(text,1);row.Children.Add(text);
     var tools=new StackPanel{Orientation=Orientation.Horizontal,VerticalAlignment=VerticalAlignment.Center};Grid.SetColumn(tools,2);
-    var use=Primary("Use",()=>{UseProfile(LoadProfile(file.FullName));Report("Switched to “"+Path.GetFileNameWithoutExtension(file.Name)+"”.");});use.Margin=new Thickness(0,0,6,0);use.Padding=new Thickness(14,5,14,5);tools.Children.Add(use);
-    tools.Children.Add(Ghost("Update",()=>{Save();JsonFile.Save(file.FullName,Profile);Page(current);Report("“"+Path.GetFileNameWithoutExtension(file.Name)+"” now matches your current desktop.");}));
+    var use=Primary("Use",()=>{UseProfile(LoadProfile(file.FullName));Report("Switched to â€œ"+Path.GetFileNameWithoutExtension(file.Name)+"â€.");});use.Margin=new Thickness(0,0,6,0);use.Padding=new Thickness(14,5,14,5);tools.Children.Add(use);
+    tools.Children.Add(Ghost("Update",()=>{Save();JsonFile.Save(file.FullName,Profile);Page(current);Report("â€œ"+Path.GetFileNameWithoutExtension(file.Name)+"â€ now matches your current desktop.");}));
     tools.Children.Add(Ghost("Show",()=>System.Diagnostics.Process.Start("explorer.exe","/select,\""+file.FullName+"\"")));
-    tools.Children.Add(Ghost("Delete",()=>{if(MessageBox.Show(this,"Move “"+Path.GetFileNameWithoutExtension(file.Name)+"” to the Recycle Bin?",Brand.Name,MessageBoxButton.OKCancel,MessageBoxImage.Question)!=MessageBoxResult.OK)return;Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.FullName,Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);Page(current);Report("Moved to the Recycle Bin.");}));
+    tools.Children.Add(Ghost("Delete",()=>{if(MessageBox.Show(this,"Move â€œ"+Path.GetFileNameWithoutExtension(file.Name)+"â€ to the Recycle Bin?",Brand.Name,MessageBoxButton.OKCancel,MessageBoxImage.Question)!=MessageBoxResult.OK)return;Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(file.FullName,Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs,Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);Page(current);Report("Moved to the Recycle Bin.");}));
     row.Children.Add(tools);list.Children.Add(row);
    }
    var reset=Card("Start over","Go back to WinDotra's defaults. Your saved desktops above stay.");
