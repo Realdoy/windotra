@@ -1,0 +1,25 @@
+name: Build and test Windows app
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile
+        shell: powershell
+        run: ./build.ps1
+      - name: Test recovery with a fake desktop
+        shell: powershell
+        run: |
+          $p = Start-Process ./dist/WinCanvas.exe -ArgumentList '--self-test' -Wait -PassThru
+          Get-Content ./dist/test-results.txt
+          if ($p.ExitCode -ne 0) { throw 'Tests failed' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WinCanvas-Windows
+          path: |
+            dist/WinCanvas.exe
+            dist/WinCanvas.exe.config
+            LICENSE

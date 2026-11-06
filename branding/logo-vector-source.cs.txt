@@ -1,0 +1,28 @@
+﻿using System;using System.Windows;using System.Windows.Controls;using System.Windows.Media;using System.Windows.Media.Imaging;using System.Windows.Shapes;
+class P{
+ [STAThread] static void Main(string[] a){
+  bool background=a.Length>1&&a[1]=="bg";var canvas=new Canvas{Width=1000,Height=1000};
+  if(background)canvas.Children.Add(new Rectangle{Width=1000,Height=1000,RadiusX=220,RadiusY=220,Fill=new SolidColorBrush(Color.FromRgb(0x0A,0x0B,0x14))});
+  var white=new SolidColorBrush(Color.FromRgb(0xF4,0xF4,0xF6));
+  // Braces drawn as thick rounded strokes.
+  Func<bool,Path> brace=(right)=>{var g=Geometry.Parse("M 120,0 C 60,0 30,30 30,95 L 30,200 C 30,250 10,275 -20,285 C 10,295 30,320 30,370 L 30,475 C 30,540 60,570 120,570");var path=new Path{Data=g,Stroke=white,StrokeThickness=54,StrokeStartLineCap=PenLineCap.Flat,StrokeEndLineCap=PenLineCap.Flat,StrokeLineJoin=PenLineJoin.Round};
+   var t=new TransformGroup();if(right)t.Children.Add(new ScaleTransform(-1,1));t.Children.Add(new TranslateTransform(right?835:165,215));path.RenderTransform=t;return path;};
+  canvas.Children.Add(brace(false));canvas.Children.Add(brace(true));
+  // Window: four panes with a slight perspective, one gradient across all of them.
+  var fill=new LinearGradientBrush(Color.FromRgb(0x4F,0xC8,0xFA),Color.FromRgb(0x8B,0x5C,0xF6),new Point(0,0),new Point(1,1));
+  var panes=new Canvas();var pts=new[]{new[]{318,355,460,336,456,464,312,472},new[]{502,330,655,307,650,460,498,465},new[]{310,514,454,509,449,640,304,622},new[]{496,508,648,502,640,660,490,645}};
+  foreach(var q in pts){var fig=new PathFigure{StartPoint=new Point(q[0],q[1]),IsClosed=true};fig.Segments.Add(new PolyLineSegment(new[]{new Point(q[2],q[3]),new Point(q[4],q[5]),new Point(q[6],q[7])},true));var geo=new PathGeometry(new[]{fig});
+   panes.Children.Add(new Path{Data=geo,Fill=fill,Stroke=fill,StrokeThickness=20,StrokeLineJoin=PenLineJoin.Round});}
+  canvas.Children.Add(panes);
+  // Paintbrush: dark outline first (cuts into the pane), then handle and tip.
+  var dark=new SolidColorBrush(Color.FromRgb(0x0A,0x0B,0x14));
+  Func<Brush,double,Path> handle=(b,extra)=>new Path{Data=Geometry.Parse("M 712,452 L 588,590"),Stroke=b,StrokeThickness=26+extra,StrokeStartLineCap=PenLineCap.Round,StrokeEndLineCap=PenLineCap.Round};
+  Func<Brush,double,Path> tip=(b,extra)=>new Path{Data=Geometry.Parse("M 585,580 C 620,600 625,640 600,662 C 575,684 520,690 470,686 C 500,672 512,640 520,615 C 532,585 560,570 585,580 Z"),Fill=b,Stroke=extra>0?b:null,StrokeThickness=extra,StrokeLineJoin=PenLineJoin.Round};
+  canvas.Children.Add(handle(dark,28));canvas.Children.Add(tip(dark,28));
+  canvas.Children.Add(handle(white,0));canvas.Children.Add(tip(new LinearGradientBrush(Color.FromRgb(0x60,0xA5,0xFA),Color.FromRgb(0xC4,0xB5,0xFD),new Point(0,1),new Point(1,0)),0));
+  canvas.Measure(new Size(1000,1000));canvas.Arrange(new Rect(0,0,1000,1000));
+  var bmp=new RenderTargetBitmap(1024,1024,96*1.024,96*1.024,PixelFormats.Pbgra32);bmp.Render(canvas);
+  var enc=new PngBitmapEncoder();enc.Frames.Add(BitmapFrame.Create(bmp));using(var f=System.IO.File.Create(a[0]))enc.Save(f);
+ }}
+
+

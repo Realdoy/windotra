@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WinDotra — Make Windows yours</title>
+<meta name="description" content="WinDotra: a Dynamic Island, a macOS-style menu bar and Dock, live wallpapers, widgets, and a community store of styles and widgets for Windows. Free and open source.">
+<link rel="icon" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+ :root{--bg:#0b0b0f;--panel:#1c1c1e;--panel2:#2c2c2e;--ink:#f5f5f7;--soft:#a1a1a6;--line:#3a3a3c;--accent:#0a84ff}
+ *{box-sizing:border-box}
+ body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+ a{color:var(--accent);text-decoration:none}
+ .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+ nav{position:sticky;top:0;z-index:5;backdrop-filter:blur(18px);background:rgba(11,11,15,.7);border-bottom:1px solid rgba(255,255,255,.06)}
+ nav .wrap{display:flex;align-items:center;gap:22px;height:56px}
+ nav img{width:26px;height:26px;border-radius:7px}
+ nav b{font-weight:600;margin-right:auto}
+ nav a{color:var(--soft);font-size:14px}
+ nav a:hover{color:var(--ink)}
+ .hero{padding:90px 0 40px;text-align:center;background:radial-gradient(1000px 500px at 50% -10%,rgba(94,92,230,.35),transparent 70%),radial-gradient(800px 400px at 80% 10%,rgba(255,55,95,.18),transparent 70%)}
+ .hero img.logo{width:92px;height:92px;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+ h1{font-size:clamp(38px,7vw,68px);letter-spacing:-.03em;margin:22px 0 8px;font-weight:700}
+ .lead{color:var(--soft);font-size:clamp(17px,2.4vw,21px);max-width:680px;margin:0 auto}
+ .buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:30px 0 10px}
+ .btn{display:inline-block;padding:12px 22px;border-radius:999px;font-weight:600;font-size:15px}
+ .btn.primary{background:var(--accent);color:#fff}
+ .btn.ghost{background:var(--panel2);color:var(--ink)}
+ .shot{display:block;width:100%;border-radius:18px;border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.55);margin-top:40px}
+ section{padding:70px 0}
+ h2{font-size:clamp(28px,4.5vw,40px);letter-spacing:-.02em;margin:0 0 10px}
+ .sub{color:var(--soft);max-width:640px;margin:0 0 30px}
+ .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+ .card{background:var(--panel);border:1px solid rgba(255,255,255,.06);border-radius:20px;padding:22px;overflow:hidden}
+ .card h3{margin:14px 0 4px;font-size:18px}
+ .card p{margin:0;color:var(--soft);font-size:14.5px}
+ .card img{width:100%;border-radius:12px;background:#000;display:block}
+ .store{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+ .item{background:var(--panel);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px;border:1px solid rgba(255,255,255,.06)}
+ .item .tag{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)}
+ .item h4{margin:0;font-size:16px}
+ .item p{margin:0;color:var(--soft);font-size:13.5px;flex:1}
+ .item a{font-size:14px;font-weight:600}
+ .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+ .tabs button{background:var(--panel2);color:var(--ink);border:0;border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;cursor:pointer}
+ .tabs button.on{background:var(--ink);color:#000}
+ pre{background:var(--panel);border-radius:14px;padding:18px;overflow-x:auto;font-size:13px;color:#d1d1d6;border:1px solid rgba(255,255,255,.06)}
+ ol{color:var(--soft)} ol li{margin:6px 0}
+ footer{color:var(--soft);font-size:13px;padding:40px 0 60px;border-top:1px solid var(--line)}
+ @media (max-width:600px){nav a.hide{display:none}.hero{padding-top:60px}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><img src="logo.png" alt=""><b>WinDotra</b><a class="hide" href="#features">Features</a><a href="#store">Store</a><a class="hide" href="#make">Make your own</a><a href="https://github.com/windotra/windotra">GitHub</a></div></nav>
+
+<header class="hero"><div class="wrap">
+ <img class="logo" src="logo.png" alt="WinDotra logo">
+ <h1>Make Windows yours.</h1>
+ <p class="lead">A Dynamic Island, a macOS-style menu bar and Dock, live wallpapers on every screen, widgets, and AI without API keys. Free and open source.</p>
+ <div class="buttons"><a class="btn primary" href="https://github.com/windotra/windotra/releases/latest">Download for Windows</a><a class="btn ghost" href="#store">Browse the store</a></div>
+ <img class="shot" src="img/page-styles.png" alt="The Styles gallery in WinDotra">
+</div></header>
+
+<section id="features"><div class="wrap">
+ <h2>Everything a desktop can be.</h2>
+ <p class="sub">Turn on only what you like. One click on “Back to normal Windows” (or Ctrl+Alt+Shift+W) puts everything back.</p>
+ <div class="grid">
+  <div class="card"><img src="img/island-expanded.png" alt="The island, open"><h3>Dynamic Island</h3><p>Now playing with a live waveform, downloads, a focus timer, tasks, and Claude or ChatGPT right inside it.</p></div>
+  <div class="card"><img src="img/control-center.png" alt="Control Center"><h3>Menu bar & Control Center</h3><p>Real app menus, Wi-Fi, sound, brightness, dark mode, and now playing, the way a Mac does it.</p></div>
+  <div class="card"><img src="img/dock.png" alt="The Dock"><h3>Dock</h3><p>Your apps with running dots, magnification, auto-hide, and macOS-shaped icons. The taskbar steps aside.</p></div>
+  <div class="card"><img src="img/scene-Hills.png" alt="The Hills live wallpaper"><h3>Live wallpapers</h3><p>Animated scenes drawn on your graphics card, your photos, or your videos, with each screen getting its own.</p></div>
+  <div class="card"><img src="img/page-store.png" alt="The Store"><h3>Widgets you make</h3><p>Write a few lines with live values like {time}, {song}, or a countdown, and share them with everyone.</p></div>
+  <div class="card"><img src="img/page-live-wallpaper.png" alt="Live wallpaper settings"><h3>Built for many screens</h3><p>A map of your monitors: give each one its own picture, video, or scene, or span one across all of them.</p></div>
+ </div>
+</div></section>
+
+<section id="store"><div class="wrap">
+ <h2>Store</h2>
+ <p class="sub">Styles and widgets from the community. They're plain JSON, never programs, so they're safe to install. In WinDotra, open <b>Store</b> and click <b>Get</b>, or download a file here and use <b>Import</b>.</p>
+ <div class="tabs"><button class="on" data-type="all">All</button><button data-type="widget">Widgets</button><button data-type="style">Styles</button></div>
+ <div class="store" id="items"><p class="sub">Loading…</p></div>
+</div></section>
+
+<section id="make"><div class="wrap">
+ <h2>Make your own and share it.</h2>
+ <p class="sub">Make a widget in WinDotra → Store → <b>Make a widget</b>, or a style in Styles → <b>Make your own</b>. Then export it and send a pull request:</p>
+ <ol>
+  <li>Fork <a href="https://github.com/windotra/windotra">the repository</a>.</li>
+  <li>Put your file in <code>docs/store/widgets</code> or <code>docs/store/styles</code>.</li>
+  <li>Add a line for it to <code>docs/store/index.json</code> and open a pull request with a screenshot.</li>
+ </ol>
+ <p class="sub">A widget is just this:</p>
+<pre>{
+ "Format": "windotra-widget", "Version": 1,
+ "Name": "Greeting", "Author": "you", "Description": "A friendly hello.",
+ "Width": 1, "Background": "", "Accent": "", "Link": "",
+ "Lines": [
+  { "Text": "{greeting}", "Size": 15, "Weight": "SemiBold", "Color": "", "Align": "Left" },
+  { "Text": "{time}", "Size": 40, "Weight": "Light", "Color": "", "Align": "Left" }
+ ]
+}</pre>
+ <p class="sub">Live values: {time} {time:h:mm tt} {date} {date:dddd} {day} {greeting} {cpu} {ram} {battery} {song} {artist} {days-until:2026-12-24} {countdown:2026-12-31 23:59}.</p>
+</div></section>
+
+<footer><div class="wrap">WinDotra is free and open source (MIT). macOS cursors: apple_cursor by ful1e5 (GPL-3.0). Inter by Rasmus Andersson (SIL OFL). Not affiliated with Apple or Microsoft.</div></footer>
+
+<script>
+ const list=document.getElementById('items');let all=[];
+ function esc(s){return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+ function show(type){list.innerHTML=all.filter(i=>type==='all'||i.Type===type).map(i=>`<div class="item"><span class="tag">${i.Type==='widget'?'Widget':'Style'}</span><h4>${esc(i.Name)}</h4><p>${esc(i.Description)}</p><span class="tag" style="text-transform:none;letter-spacing:0">by ${esc(i.Author||'someone')}</span><a href="store/${encodeURI(i.File)}" download>Download</a></div>`).join('')||'<p class="sub">Nothing here yet.</p>';}
+ fetch('store/index.json').then(r=>r.json()).then(d=>{all=d.Items||[];show('all');}).catch(()=>{list.innerHTML='<p class="sub">The store catalog could not be loaded.</p>';});
+ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');show(b.dataset.type);});
+</script>
+</body>
+</html>

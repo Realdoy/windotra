@@ -1,0 +1,34 @@
+{
+ "Format": "windotra-widget",
+ "Version": 1,
+ "Name": "World Clock",
+ "Author": "WinDotra",
+ "Description": "Your time in 12-hour and 24-hour, plus the day.",
+ "Background": "#FFFFFF",
+ "Accent": "",
+ "Link": "",
+ "Width": 1,
+ "Lines": [
+  {
+   "Text": "{day}",
+   "Size": 13,
+   "Weight": "SemiBold",
+   "Color": "#FF3B30",
+   "Align": "Left"
+  },
+  {
+   "Text": "{time:h:mm}",
+   "Size": 40,
+   "Weight": "Light",
+   "Color": "#1C1C1E",
+   "Align": "Left"
+  },
+  {
+   "Text": "{time:tt}  \u00b7  {time:HH:mm}",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#8E8E93",
+   "Align": "Left"
+  }
+ ]
+}

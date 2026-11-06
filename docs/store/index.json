@@ -1,0 +1,81 @@
+{
+ "Items": [
+  {
+   "Type": "widget",
+   "Name": "Greeting",
+   "Author": "WinDotra",
+   "Description": "A friendly hello with the time and date.",
+   "File": "widgets/greeting.windotra-widget"
+  },
+  {
+   "Type": "widget",
+   "Name": "New Year Countdown",
+   "Author": "WinDotra",
+   "Description": "Counts down to midnight on New Year's Eve.",
+   "File": "widgets/new-year-countdown.windotra-widget"
+  },
+  {
+   "Type": "widget",
+   "Name": "Now Playing Text",
+   "Author": "WinDotra",
+   "Description": "Just the song and artist, big and simple.",
+   "File": "widgets/now-playing-text.windotra-widget"
+  },
+  {
+   "Type": "widget",
+   "Name": "System Line",
+   "Author": "WinDotra",
+   "Description": "CPU, memory, and power in one quiet tile.",
+   "File": "widgets/system-line.windotra-widget"
+  },
+  {
+   "Type": "widget",
+   "Name": "World Clock",
+   "Author": "WinDotra",
+   "Description": "Your time in 12-hour and 24-hour, plus the day.",
+   "File": "widgets/world-clock.windotra-widget"
+  },
+  {
+   "Type": "style",
+   "Name": "Apple Dark",
+   "Author": "WinDotra",
+   "Description": "macOS in dark mode: midnight hills, dark menu bar and Dock, graphite widgets.",
+   "File": "styles/apple-dark.windotra-style"
+  },
+  {
+   "Type": "style",
+   "Name": "Apple",
+   "Author": "WinDotra",
+   "Description": "macOS Sonoma on Windows: pastel hills, menu bar, Dock, notch island, white widgets on the side.",
+   "File": "styles/apple.windotra-style"
+  },
+  {
+   "Type": "style",
+   "Name": "Midnight Neon",
+   "Author": "WinDotra",
+   "Description": "Deep black, hot pink, a starfield, a glowing island, and a dark Dock.",
+   "File": "styles/midnight-neon.windotra-style"
+  },
+  {
+   "Type": "style",
+   "Name": "Paper",
+   "Author": "WinDotra",
+   "Description": "Warm paper tiles, rust accent, quiet lines, a light Dock, and a soft rounded island.",
+   "File": "styles/paper.windotra-style"
+  },
+  {
+   "Type": "style",
+   "Name": "Rainmeter",
+   "Author": "WinDotra",
+   "Description": "Just the big F R I D A Y date on a dark gradient. No tiles, no Dock, a tiny island.",
+   "File": "styles/rainmeter.windotra-style"
+  },
+  {
+   "Type": "style",
+   "Name": "Windows 11",
+   "Author": "WinDotra",
+   "Description": "Fluent: Mica-dark tiles in a column, rounded island, digital clock, system stats, calm blue gradient.",
+   "File": "styles/windows-11.windotra-style"
+  }
+ ]
+}

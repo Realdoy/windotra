@@ -1,0 +1,1 @@
+﻿macOS cursors (macos = black, for light mode; macos-white = for dark mode) are from apple_cursor by Abdulkaiz Khatri (ful1e5), https://github.com/ful1e5/apple_cursor, v2.0.1, licensed GPL-3.0 (https://www.gnu.org/licenses/gpl-3.0.html). They are shipped unmodified as separate data files.

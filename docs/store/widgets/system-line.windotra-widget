@@ -1,0 +1,41 @@
+{
+ "Format": "windotra-widget",
+ "Version": 1,
+ "Name": "System Line",
+ "Author": "WinDotra",
+ "Description": "CPU, memory, and power in one quiet tile.",
+ "Background": "#1C1C1E",
+ "Accent": "",
+ "Link": "",
+ "Width": 1,
+ "Lines": [
+  {
+   "Text": "System",
+   "Size": 15,
+   "Weight": "SemiBold",
+   "Color": "#30D158",
+   "Align": "Left"
+  },
+  {
+   "Text": "CPU {cpu}",
+   "Size": 14,
+   "Weight": "Normal",
+   "Color": "",
+   "Align": "Left"
+  },
+  {
+   "Text": "Memory {ram}",
+   "Size": 14,
+   "Weight": "Normal",
+   "Color": "",
+   "Align": "Left"
+  },
+  {
+   "Text": "{battery}",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#99FFFFFF",
+   "Align": "Left"
+  }
+ ]
+}

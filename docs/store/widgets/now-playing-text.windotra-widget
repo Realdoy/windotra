@@ -1,0 +1,34 @@
+{
+ "Format": "windotra-widget",
+ "Version": 1,
+ "Name": "Now Playing Text",
+ "Author": "WinDotra",
+ "Description": "Just the song and artist, big and simple.",
+ "Background": "",
+ "Accent": "",
+ "Link": "",
+ "Width": 2,
+ "Lines": [
+  {
+   "Text": "NOW PLAYING",
+   "Size": 11,
+   "Weight": "SemiBold",
+   "Color": "#FF375F",
+   "Align": "Left"
+  },
+  {
+   "Text": "{song}",
+   "Size": 22,
+   "Weight": "SemiBold",
+   "Color": "",
+   "Align": "Left"
+  },
+  {
+   "Text": "{artist}",
+   "Size": 14,
+   "Weight": "Normal",
+   "Color": "",
+   "Align": "Left"
+  }
+ ]
+}

@@ -1,0 +1,34 @@
+{
+ "Format": "windotra-widget",
+ "Version": 1,
+ "Name": "New Year Countdown",
+ "Author": "WinDotra",
+ "Description": "Counts down to midnight on New Year's Eve.",
+ "Background": "#1B2540",
+ "Accent": "",
+ "Link": "",
+ "Width": 2,
+ "Lines": [
+  {
+   "Text": "New Year",
+   "Size": 15,
+   "Weight": "SemiBold",
+   "Color": "#FFD60A",
+   "Align": "Left"
+  },
+  {
+   "Text": "{countdown:2026-12-31 23:59:59}",
+   "Size": 30,
+   "Weight": "Light",
+   "Color": "#FFFFFF",
+   "Align": "Left"
+  },
+  {
+   "Text": "{days-until:2027-01-01} days to go",
+   "Size": 12,
+   "Weight": "Normal",
+   "Color": "#B3FFFFFF",
+   "Align": "Left"
+  }
+ ]
+}
